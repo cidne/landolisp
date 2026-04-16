@@ -1,0 +1,70 @@
+{
+  "id": "003-quote",
+  "title": "Quote: Code as Data",
+  "track": "fundamentals",
+  "order": 3,
+  "estimatedMinutes": 10,
+  "prerequisites": ["002-lists-and-evaluation"],
+  "completionSymbols": ["quote", "list", "car", "cdr", "symbolp", "listp", "atom"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Quote: Code as Data\n\nBy default the evaluator treats every list as a function call. To say \"this list is just data, don't evaluate it,\" use **quote**:\n\n```lisp\n(quote (1 2 3))   ; the list (1 2 3)\n```\n\nQuote is so common it has reader-syntax: `'X` is read as `(quote X)`. So `'(1 2 3)` and `(quote (1 2 3))` are identical.\n\nQuote also lets you refer to **symbols themselves** instead of their values. `'foo` is the symbol named FOO; without the quote, Lisp would try to look up FOO's value.\n\nQuoting is *shallow*: subforms inside a quoted list are also unevaluated."
+    },
+    {
+      "kind": "example",
+      "code": "(quote (1 2 3))",
+      "expected": "(1 2 3)",
+      "explain": "Returns the literal list (1 2 3), no function call attempted."
+    },
+    {
+      "kind": "example",
+      "code": "'(1 2 3)",
+      "expected": "(1 2 3)",
+      "explain": "Reader syntax: 'X is exactly (quote X)."
+    },
+    {
+      "kind": "example",
+      "code": "'foo",
+      "expected": "FOO",
+      "explain": "The symbol FOO (printed in uppercase — symbols are case-folded by the reader)."
+    },
+    {
+      "kind": "example",
+      "code": "'(+ 1 2)",
+      "expected": "(+ 1 2)",
+      "explain": "Inside a quote, nothing is evaluated. The result is a 3-element list."
+    },
+    {
+      "kind": "example",
+      "code": "(car '(+ 1 2))",
+      "expected": "+",
+      "explain": "The first element of the unevaluated list is the symbol +."
+    },
+    {
+      "kind": "example",
+      "code": "(list 'a 'b 'c)",
+      "expected": "(A B C)",
+      "explain": "We pass three quoted symbols to LIST. LIST evaluates each — and a quoted symbol evaluates to the symbol itself."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define HEAD-SYMBOL that, given a non-empty list whose first element is a symbol, returns that symbol.",
+      "starter": "(defun head-symbol (form)\n  )",
+      "tests": [
+        { "call": "(head-symbol '(defun foo () 42))", "equals": "DEFUN" },
+        { "call": "(head-symbol '(if x y z))", "equals": "IF" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define ARITY that returns how many arguments a quoted call expression has — the length minus one (the operator).",
+      "starter": "(defun arity (form)\n  )",
+      "tests": [
+        { "call": "(arity '(+ 1 2 3))", "equals": "3" },
+        { "call": "(arity '(list))", "equals": "0" },
+        { "call": "(arity '(f a b))", "equals": "2" }
+      ]
+    }
+  ]
+}

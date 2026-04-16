@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default config: HTTPS only in release.
+
+  The debug source set ships its own manifest overlay that re-enables
+  cleartext so the emulator can hit http://10.0.2.2:8080 during development.
+  The emulator loopback host is also whitelisted here for belt-and-braces
+  so local runs never fall back to plaintext for production hosts.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

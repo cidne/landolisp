@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Placeholder parent; Compose Material3 provides the real color scheme via Theme.kt.
+         We inherit from Material3.DayNight.NoActionBar so the system window chrome
+         follows the theme before Compose takes over. -->
+    <style name="Theme.Landolisp" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+    </style>
+</resources>

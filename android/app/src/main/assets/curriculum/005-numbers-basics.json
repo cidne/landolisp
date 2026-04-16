@@ -1,0 +1,77 @@
+{
+  "id": "005-numbers-basics",
+  "title": "Numbers: The Basics",
+  "track": "fundamentals",
+  "order": 5,
+  "estimatedMinutes": 10,
+  "prerequisites": ["001-atoms"],
+  "completionSymbols": ["+", "-", "*", "/", "mod", "rem", "expt", "abs", "min", "max", "floor", "ceiling", "round", "truncate", "1+", "1-"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Numbers: The Basics\n\nCommon Lisp distinguishes several numeric kinds — integers, ratios, floats, complex — and silently promotes between them. Today we focus on the everyday operations.\n\n* `+`, `-`, `*`, `/` — variadic arithmetic.\n* `1+`, `1-` — increment / decrement (return a new value).\n* `abs`, `min`, `max`, `expt`, `sqrt`.\n* `floor`, `ceiling`, `round`, `truncate` — convert to integer (each returns a quotient and remainder; we'll use the primary value).\n* `mod`, `rem` — modulus and remainder. They differ when arguments have different signs.\n\nInteger / integer is always exact (a ratio). To get a float, mix in a float: `(/ 1.0 3)`."
+    },
+    {
+      "kind": "example",
+      "code": "(expt 2 10)",
+      "expected": "1024",
+      "explain": "EXPT raises to a power."
+    },
+    {
+      "kind": "example",
+      "code": "(abs -7)",
+      "expected": "7",
+      "explain": "Absolute value."
+    },
+    {
+      "kind": "example",
+      "code": "(max 3 1 4 1 5 9 2 6)",
+      "expected": "9",
+      "explain": "MAX/MIN take any number of arguments."
+    },
+    {
+      "kind": "example",
+      "code": "(mod 10 3)",
+      "expected": "1",
+      "explain": "10 = 3*3 + 1."
+    },
+    {
+      "kind": "example",
+      "code": "(floor 7 2)",
+      "expected": "3",
+      "explain": "FLOOR returns two values; the REPL shows the primary one. Quotient is 3, remainder 1."
+    },
+    {
+      "kind": "example",
+      "code": "(/ 1.0 3)",
+      "expected": "0.33333334",
+      "explain": "Float contagion: any float in the call promotes the result to a float."
+    },
+    {
+      "kind": "example",
+      "code": "(1+ 41)",
+      "expected": "42",
+      "explain": "1+ adds one — convenient and idiomatic."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SQUARE that returns its argument squared.",
+      "starter": "(defun square (x)\n  )",
+      "tests": [
+        { "call": "(square 5)", "equals": "25" },
+        { "call": "(square -3)", "equals": "9" },
+        { "call": "(square 0)", "equals": "0" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define AVG3 that returns the average of three integers as a ratio (so do NOT introduce floats).",
+      "starter": "(defun avg3 (a b c)\n  )",
+      "tests": [
+        { "call": "(avg3 1 2 3)", "equals": "2" },
+        { "call": "(avg3 1 2 4)", "equals": "7/3" },
+        { "call": "(avg3 0 0 1)", "equals": "1/3" }
+      ]
+    }
+  ]
+}

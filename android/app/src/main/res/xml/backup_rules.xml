@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup rules. Excludes ephemeral session id and Retrofit caches; preserves
+  any DataStore preferences (e.g. last-opened lesson) once they exist.
+-->
+<full-backup-content>
+    <include domain="sharedpref" path="." />
+    <exclude domain="sharedpref" path="sandbox-session.xml" />
+    <exclude domain="cache" path="." />
+    <exclude domain="external_cache" path="." />
+</full-backup-content>

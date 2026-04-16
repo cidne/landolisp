@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only manifest overlay. Forces cleartext HTTP so the emulator can hit a
+  locally-running sandbox at http://10.0.2.2:8080 without TLS. Release builds
+  inherit the main manifest, which omits this flag and pins HTTPS via the
+  base network security config.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic" />
+</manifest>
