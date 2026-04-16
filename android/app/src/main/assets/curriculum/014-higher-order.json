@@ -1,0 +1,90 @@
+{
+  "id": "014-higher-order",
+  "title": "Higher-Order Functions: MAPCAR, REDUCE, REMOVE-IF",
+  "track": "functions",
+  "order": 14,
+  "estimatedMinutes": 12,
+  "prerequisites": ["013-recursion"],
+  "completionSymbols": ["mapcar", "reduce", "remove-if", "remove-if-not", "find-if", "count-if", "every", "some", "funcall", "apply", "lambda"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Higher-Order Functions\n\nPassing functions as arguments is where Lisp begins to shine.\n\n* `(mapcar fn list ...)` — apply `fn` to corresponding elements of one or more lists; collect results into a new list.\n* `(reduce fn list &key initial-value)` — fold across a sequence.\n* `(remove-if pred list)` / `(remove-if-not pred list)` — filter.\n* `(find-if pred list)` — first element satisfying `pred`, or `NIL`.\n* `(count-if pred list)` — how many satisfy.\n* `(every pred list)`, `(some pred list)` — universal / existential tests.\n\nRemember: to **name** a function at a call site, use `#'` — e.g. `(mapcar #'1+ '(1 2 3))`."
+    },
+    {
+      "kind": "example",
+      "code": "(mapcar #'1+ '(1 2 3 4))",
+      "expected": "(2 3 4 5)",
+      "explain": "Bump each element by one."
+    },
+    {
+      "kind": "example",
+      "code": "(mapcar (lambda (x) (* x x)) '(1 2 3 4))",
+      "expected": "(1 4 9 16)",
+      "explain": "MAPCAR with a lambda."
+    },
+    {
+      "kind": "example",
+      "code": "(mapcar #'+ '(1 2 3) '(10 20 30))",
+      "expected": "(11 22 33)",
+      "explain": "Multi-list MAPCAR pairs corresponding elements."
+    },
+    {
+      "kind": "example",
+      "code": "(reduce #'+ '(1 2 3 4 5))",
+      "expected": "15",
+      "explain": "Fold + across the list."
+    },
+    {
+      "kind": "example",
+      "code": "(reduce #'+ '(1 2 3) :initial-value 100)",
+      "expected": "106",
+      "explain": "Starts the accumulator at 100."
+    },
+    {
+      "kind": "example",
+      "code": "(remove-if #'oddp '(1 2 3 4 5 6))",
+      "expected": "(2 4 6)",
+      "explain": "REMOVE-IF drops elements for which the predicate is true."
+    },
+    {
+      "kind": "example",
+      "code": "(remove-if-not #'evenp '(1 2 3 4 5 6))",
+      "expected": "(2 4 6)",
+      "explain": "REMOVE-IF-NOT keeps those that satisfy the predicate (i.e. filter)."
+    },
+    {
+      "kind": "example",
+      "code": "(count-if #'plusp '(-1 2 -3 4 -5 6))",
+      "expected": "3",
+      "explain": "Three positive numbers."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SQUARES that returns a list of the squares of its input list, using MAPCAR.",
+      "starter": "(defun squares (xs)\n  )",
+      "tests": [
+        { "call": "(squares '(1 2 3 4))", "equals": "(1 4 9 16)" },
+        { "call": "(squares nil)", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define TOTAL that returns the sum of a list of numbers, using REDUCE.",
+      "starter": "(defun total (xs)\n  )",
+      "tests": [
+        { "call": "(total '(1 2 3 4 5))", "equals": "15" },
+        { "call": "(total nil)", "equals": "0" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define ONLY-POSITIVES that returns only the positive numbers in a list, preserving order, using REMOVE-IF-NOT.",
+      "starter": "(defun only-positives (xs)\n  )",
+      "tests": [
+        { "call": "(only-positives '(1 -2 3 -4 5))", "equals": "(1 3 5)" },
+        { "call": "(only-positives '(-1 -2 -3))", "equals": "NIL" }
+      ]
+    }
+  ]
+}

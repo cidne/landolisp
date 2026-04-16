@@ -1,0 +1,43 @@
+{
+  "id": "076-test-systems",
+  "title": "Test Systems and IN-ORDER-TO",
+  "track": "system",
+  "order": 76,
+  "estimatedMinutes": 10,
+  "prerequisites": ["075-load-system-vs-quickload"],
+  "completionSymbols": ["asdf:defsystem", ":in-order-to", "asdf:test-op", "asdf:load-op", "asdf:perform", "asdf:test-system", "fiveam"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Test Systems and IN-ORDER-TO\n\nA project usually has tests that depend on the project itself plus a test framework (`fiveam`, `parachute`, `rove`, ...). The convention is two systems:\n\n* `cool` — the library.\n* `cool/tests` (or `cool-tests`) — depends on `cool` and a test framework. `(asdf:test-system :cool)` should run them.\n\nThe glue is the `:in-order-to` clause on the main system, telling ASDF to fan out the `test-op` to the tests system:\n\n```lisp\n(asdf:defsystem #:cool\n  :depends-on (#:alexandria)\n  :serial t\n  :components ((:file \"package\") (:file \"core\"))\n  :in-order-to ((asdf:test-op (asdf:test-op #:cool/tests))))\n\n(asdf:defsystem #:cool/tests\n  :depends-on (#:cool #:fiveam)\n  :serial t\n  :components ((:file \"tests\"))\n  :perform (asdf:test-op (op c)\n             (uiop:symbol-call :fiveam :run! :cool-suite)))\n```\n\nReading the keys:\n\n* `:in-order-to ((TEST-OP (TEST-OP #:other)))` — \"to do test-op on me, do test-op on `other`\".\n* `:perform (OP (op c) BODY)` — define what running operation `OP` on this component actually means. We use `uiop:symbol-call` so the test framework symbol is resolved at runtime, after `fiveam` is loaded.\n\nThis pattern keeps the test framework out of your library's runtime dependencies — production users don't pull in `fiveam`."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:t-demo :components () :in-order-to ((asdf:test-op (asdf:test-op #:t-demo)))) (not (null (asdf:find-system :t-demo))))",
+      "expected": "T",
+      "explain": "DEFSYSTEM accepts the :IN-ORDER-TO clause. We register the system and confirm FIND-SYSTEM finds it."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:t-demo2 :components ()) (subtypep (find-class 'asdf:test-op) (find-class 'asdf:operation)))",
+      "expected": "T",
+      "explain": "TEST-OP is a subclass of ASDF:OPERATION. SUBTYPEP returns T (and a definitive second value)."
+    },
+    {
+      "kind": "example",
+      "code": "(symbolp 'asdf:test-op)",
+      "expected": "T",
+      "explain": "Sanity-check that ASDF:TEST-OP exists as an exported symbol."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a system NAMED-TEST-SYS (with no components and no test redirection — just a stub). Then define HAS-IN-ORDER-TO-P (SYS) returning T iff system SYS has any :IN-ORDER-TO entries (i.e. the result of asdf:component-in-order-to is non-NIL). For our stub the answer is NIL.",
+      "starter": "(asdf:defsystem #:named-test-sys :components ())\n\n(defun has-in-order-to-p (sys)\n  )",
+      "hint": "(and (asdf:component-in-order-to (asdf:find-system sys)) t).",
+      "tests": [
+        { "call": "(has-in-order-to-p :named-test-sys)", "equals": "NIL" },
+        { "call": "(progn (asdf:defsystem #:has-iot :components () :in-order-to ((asdf:test-op (asdf:test-op #:has-iot)))) (has-in-order-to-p :has-iot))", "equals": "T" }
+      ]
+    }
+  ]
+}

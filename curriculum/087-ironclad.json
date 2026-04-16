@@ -1,0 +1,50 @@
+{
+  "id": "087-ironclad",
+  "title": "Ironclad: Cryptographic Primitives",
+  "track": "libraries",
+  "order": 87,
+  "estimatedMinutes": 12,
+  "prerequisites": ["086-fset"],
+  "completionSymbols": ["ql:quickload", "ironclad:digest-sequence", "ironclad:byte-array-to-hex-string", "ironclad:ascii-string-to-byte-array", "ironclad:hex-string-to-byte-array", "ironclad:make-hmac", "ironclad:update-hmac", "ironclad:hmac-digest"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Ironclad: Cryptographic Primitives\n\nIronclad is the standard Common Lisp crypto library. Everything you'd expect — hashes, HMACs, block ciphers, public-key — implemented in pure Lisp. It has no native dependencies, which is both convenient and a performance ceiling: don't use it for serious bulk crypto, but it's perfect for hashing, signing, and the occasional integrity check.\n\nThe basic shape: bytes go in, bytes come out. Convenience helpers convert to and from strings.\n\n* `(ironclad:digest-sequence DIGEST-NAME BYTES)` — one-shot hash. `DIGEST-NAME` is a keyword like `:sha256` or `:md5`.\n* `(ironclad:byte-array-to-hex-string BYTES)` — render a byte vector as lowercase hex.\n* `(ironclad:ascii-string-to-byte-array STRING)` — encode an ASCII string as bytes.\n* `(ironclad:make-hmac KEY-BYTES :sha256)` — start an HMAC.\n* `(ironclad:update-hmac HMAC BYTES)` then `(ironclad:hmac-digest HMAC)` — feed and finalize.\n\nFor anything stateful (HMAC, streaming hash) the pattern is `make` → `update` (one or more times) → `digest`."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :ironclad)",
+      "expected": "(:IRONCLAD)",
+      "explain": "Load Ironclad."
+    },
+    {
+      "kind": "example",
+      "code": "(ironclad:byte-array-to-hex-string (ironclad:digest-sequence :sha256 (ironclad:ascii-string-to-byte-array \"hello\")))",
+      "expected": "\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\"",
+      "explain": "SHA-256 of the ASCII string \"hello\". The hex string is a known fixture — same value any SHA-256 implementation produces."
+    },
+    {
+      "kind": "example",
+      "code": "(ironclad:byte-array-to-hex-string (ironclad:digest-sequence :sha256 (ironclad:ascii-string-to-byte-array \"\")))",
+      "expected": "\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"",
+      "explain": "SHA-256 of the empty string — another classic test vector."
+    },
+    {
+      "kind": "example",
+      "code": "(ironclad:byte-array-to-hex-string (ironclad:digest-sequence :md5 (ironclad:ascii-string-to-byte-array \"hello\")))",
+      "expected": "\"5d41402abc4b2a76b9719d911017c592\"",
+      "explain": "MD5 of \"hello\". MD5 is broken for collision resistance but still useful for non-adversarial integrity checks."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SHA256-HEX (STRING) returning the lowercase hex SHA-256 of the ASCII bytes of STRING. Use the IRONCLAD pipeline shown above.",
+      "starter": "(defun sha256-hex (string)\n  )",
+      "hint": "(ironclad:byte-array-to-hex-string (ironclad:digest-sequence :sha256 (ironclad:ascii-string-to-byte-array string))).",
+      "tests": [
+        { "call": "(sha256-hex \"\")", "equals": "\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"" },
+        { "call": "(sha256-hex \"hello\")", "equals": "\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\"" },
+        { "call": "(sha256-hex \"abc\")", "equals": "\"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\"" }
+      ]
+    }
+  ]
+}

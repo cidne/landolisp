@@ -1,0 +1,65 @@
+{
+  "id": "036-reader-vs-evaluator",
+  "title": "The Reader vs the Evaluator",
+  "track": "macros",
+  "order": 36,
+  "estimatedMinutes": 9,
+  "prerequisites": ["003-quote", "035-block-return"],
+  "completionSymbols": ["read-from-string", "quote", "eval", "type-of", "car", "cdr", "symbolp", "listp"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# The Reader vs the Evaluator\n\nBefore we touch macros, sharpen one mental model: there are **two phases** every Lisp form goes through.\n\n1. **Read** — the text `\"(+ 1 2)\"` is parsed into a Lisp **object**: a 3-element cons whose car is the symbol `+`. This is the job of `read` (and its sibling `read-from-string`). After reading, the source is *just data*.\n2. **Evaluate** — the evaluator looks at that data, sees a list whose car is a symbol naming a function, evaluates the arguments, and calls the function.\n\n`quote` interrupts step 2: `'foo` reads the same as `(quote foo)`, and the evaluator treats `(quote x)` by returning `x` *without* evaluating it. So `'(+ 1 2)` is the **list** `(+ 1 2)`, three objects long, *not* the number 3.\n\nMacros live between these two phases. A macro receives source code as data (the post-read tree) and returns new source code, also as data, which the evaluator then sees in place of the original. That's why macros are so powerful: anything `read` can produce, a macro can transform."
+    },
+    {
+      "kind": "example",
+      "code": "(read-from-string \"(+ 1 2)\")",
+      "expected": "(+ 1 2)",
+      "explain": "READ-FROM-STRING runs the reader. We get a list object; the + is not yet called."
+    },
+    {
+      "kind": "example",
+      "code": "(type-of (read-from-string \"foo\"))",
+      "expected": "SYMBOL",
+      "explain": "Identifiers in source become SYMBOL objects."
+    },
+    {
+      "kind": "example",
+      "code": "(car '(+ 1 2))",
+      "expected": "+",
+      "explain": "Once quoted, the form is just data — we can pull it apart with CAR/CDR like any list."
+    },
+    {
+      "kind": "example",
+      "code": "(eval '(+ 1 2))",
+      "expected": "3",
+      "explain": "EVAL hands the data structure back to the evaluator. (You'll rarely call EVAL by hand — macros are the structured way.)"
+    },
+    {
+      "kind": "example",
+      "code": "(symbolp (car '(if x y z)))",
+      "expected": "T",
+      "explain": "The CAR of an IF form is the symbol IF — a Lisp object you can inspect."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define HEAD-SYMBOL that returns the first element of FORM (which is assumed to be a list). This is the kind of inspection a macro does on its input.",
+      "starter": "(defun head-symbol (form)\n  )",
+      "tests": [
+        { "call": "(head-symbol '(if a b c))", "equals": "IF" },
+        { "call": "(head-symbol '(+ 1 2))", "equals": "+" },
+        { "call": "(head-symbol '(my-macro x))", "equals": "MY-MACRO" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define ARG-COUNT that returns the number of arguments in a function-call-shaped FORM (i.e. the length of its CDR).",
+      "starter": "(defun arg-count (form)\n  )",
+      "tests": [
+        { "call": "(arg-count '(+ 1 2 3))", "equals": "3" },
+        { "call": "(arg-count '(foo))", "equals": "0" },
+        { "call": "(arg-count '(if a b c))", "equals": "3" }
+      ]
+    }
+  ]
+}

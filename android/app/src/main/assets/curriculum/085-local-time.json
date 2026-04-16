@@ -1,0 +1,56 @@
+{
+  "id": "085-local-time",
+  "title": "LOCAL-TIME: Real Date/Time Handling",
+  "track": "libraries",
+  "order": 85,
+  "estimatedMinutes": 10,
+  "prerequisites": ["084-cl-json"],
+  "completionSymbols": ["ql:quickload", "local-time:encode-timestamp", "local-time:timestamp-to-unix", "local-time:unix-to-timestamp", "local-time:timestamp-year", "local-time:timestamp-month", "local-time:timestamp-day", "local-time:timestamp+", "local-time:format-timestring"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# LOCAL-TIME: Real Date/Time Handling\n\nCommon Lisp ships with `get-universal-time` (seconds since 1900) and `encode-universal-time`. They work but are spartan: no timezones, no parsing, no arithmetic on durations. `local-time` is the de facto replacement.\n\nThe central type is `timestamp`, holding a UTC instant with sub-second precision plus an associated timezone for display.\n\nKey functions:\n\n* `(local-time:encode-timestamp NSEC SEC MIN HOUR DAY MONTH YEAR &key timezone)` — build a deterministic timestamp.\n* `(local-time:now)` — current instant. *Don't* use in tests; non-deterministic.\n* `(local-time:timestamp-to-unix TS)` — seconds since 1970-01-01 UTC.\n* `(local-time:unix-to-timestamp N)` — inverse.\n* `(local-time:timestamp-year TS)`, `-month`, `-day`, `-hour`, etc.\n* `(local-time:timestamp+ TS AMOUNT UNIT)` — add e.g. `(:day 7)`. Returns a new timestamp.\n* `(local-time:format-timestring STREAM TS &key format)` — render. With `STREAM = nil`, returns a string.\n\nFor tests, always start from `encode-timestamp` so the value is reproducible across machines and runs."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :local-time)",
+      "expected": "(:LOCAL-TIME)",
+      "explain": "Load LOCAL-TIME."
+    },
+    {
+      "kind": "example",
+      "code": "(local-time:timestamp-to-unix (local-time:encode-timestamp 0 0 0 0 1 1 1970 :timezone local-time:+utc-zone+))",
+      "expected": "0",
+      "explain": "1970-01-01 00:00:00 UTC is unix epoch 0. Serves as a sanity check that ENCODE-TIMESTAMP and TIMESTAMP-TO-UNIX agree."
+    },
+    {
+      "kind": "example",
+      "code": "(local-time:timestamp-year (local-time:encode-timestamp 0 0 0 0 14 7 1789 :timezone local-time:+utc-zone+))",
+      "expected": "1789",
+      "explain": "Field accessors return the integer for the requested component."
+    },
+    {
+      "kind": "example",
+      "code": "(local-time:timestamp-day (local-time:timestamp+ (local-time:encode-timestamp 0 0 0 0 1 1 2000 :timezone local-time:+utc-zone+) 5 :day))",
+      "expected": "6",
+      "explain": "Add 5 days to 2000-01-01; the day-of-month is now 6."
+    },
+    {
+      "kind": "example",
+      "code": "(local-time:format-timestring nil (local-time:encode-timestamp 0 0 0 0 14 7 1789 :timezone local-time:+utc-zone+) :format '(:year \"-\" (:month 2) \"-\" (:day 2)) :timezone local-time:+utc-zone+)",
+      "expected": "\"1789-07-14\"",
+      "explain": "FORMAT-TIMESTRING accepts a format spec — a list of literals and field codes. Here we render an ISO date."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define UNIX-OF (Y M D) returning the Unix epoch second of midnight UTC on Y-M-D using LOCAL-TIME. ENCODE-TIMESTAMP order is (nsec sec min hour day month year).",
+      "starter": "(defun unix-of (y m d)\n  )",
+      "hint": "(local-time:timestamp-to-unix (local-time:encode-timestamp 0 0 0 0 d m y :timezone local-time:+utc-zone+)).",
+      "tests": [
+        { "call": "(unix-of 1970 1 1)", "equals": "0" },
+        { "call": "(unix-of 2000 1 1)", "equals": "946684800" },
+        { "call": "(unix-of 2024 1 1)", "equals": "1704067200" }
+      ]
+    }
+  ]
+}

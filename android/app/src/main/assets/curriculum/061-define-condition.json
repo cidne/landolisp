@@ -1,0 +1,44 @@
+{
+  "id": "061-define-condition",
+  "title": "DEFINE-CONDITION: Your Own Condition Classes",
+  "track": "conditions",
+  "order": 61,
+  "estimatedMinutes": 10,
+  "prerequisites": ["060-restart-case"],
+  "completionSymbols": ["define-condition", "error", "warning", "handler-case", ":report", ":initarg", ":reader", "slot-value"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DEFINE-CONDITION: Your Own Condition Classes\n\nSpecialize your error handling by defining your own condition classes. `define-condition` looks almost exactly like `defclass`, but the metaclass is `condition` instead of `standard-object`:\n\n```lisp\n(define-condition CONDITION-NAME (PARENT-CONDITION ...)\n  ((slot-name :initarg :slot-name :reader slot-name)\n   ...)\n  (:report (lambda (condition stream) ...)))\n```\n\nKey points:\n\n* The **parent** list determines what handlers catch the condition. For a recoverable error, inherit from `error`. For advisory conditions, `condition` or `warning`.\n* **Slots** work like `defclass` slots: `:initarg`, `:reader`, `:initform`.\n* The `:report` option is the printer used by the debugger and `princ`. It receives the condition and a stream.\n\nSignal your class with `(error 'my-error :slot1 v1 :slot2 v2)` (or `signal`/`warn` for non-fatal kinds). Handlers that specialise on your class — or any ancestor — will catch it."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition bad-input (error) ((value :initarg :value :reader bad-input-value)) (:report (lambda (c s) (format s \"bad input: ~s\" (bad-input-value c))))) (handler-case (error 'bad-input :value 42) (bad-input (c) (bad-input-value c))))",
+      "expected": "42",
+      "explain": "We define a condition with one slot, signal it, and pull the slot out in the handler."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition bad-input (error) ((value :initarg :value :reader bad-input-value)) (:report (lambda (c s) (format s \"bad input: ~s\" (bad-input-value c))))) (handler-case (error 'bad-input :value :oops) (error (c) (princ-to-string c))))",
+      "expected": "\"bad input: :OOPS\"",
+      "explain": "A handler on the generic ERROR class still catches our subclass. PRINC-TO-STRING uses the :REPORT function."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition too-big (error) ((n :initarg :n :reader too-big-n))) (handler-case (error 'too-big :n 1000) (too-big (c) (list :limit-exceeded (too-big-n c)))))",
+      "expected": "(:LIMIT-EXCEEDED 1000)",
+      "explain": "No :REPORT is required — the slot is still accessible through its reader."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a condition OUT-OF-RANGE inheriting from ERROR with slots LOW, HIGH, GOT (all initargs, with matching readers OUT-OF-RANGE-LOW, OUT-OF-RANGE-HIGH, OUT-OF-RANGE-GOT). Then define CHECK-RANGE (N LOW HIGH) that signals the condition when N is outside [LOW, HIGH], otherwise returns N. Catch it in tests with HANDLER-CASE.",
+      "starter": "(define-condition out-of-range (error)\n  ((low  :initarg :low  :reader out-of-range-low)\n   (high :initarg :high :reader out-of-range-high)\n   (got  :initarg :got  :reader out-of-range-got)))\n\n(defun check-range (n low high)\n  )",
+      "hint": "(if (<= low n high) n (error 'out-of-range :low low :high high :got n)).",
+      "tests": [
+        { "call": "(check-range 5 0 10)", "equals": "5" },
+        { "call": "(handler-case (check-range 99 0 10) (out-of-range (c) (out-of-range-got c)))", "equals": "99" },
+        { "call": "(handler-case (check-range -1 0 10) (out-of-range (c) (list (out-of-range-low c) (out-of-range-high c) (out-of-range-got c))))", "equals": "(0 10 -1)" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "id": "089-cl-who",
+  "title": "CL-WHO: HTML Generation",
+  "track": "libraries",
+  "order": 89,
+  "estimatedMinutes": 10,
+  "prerequisites": ["088-bordeaux-threads"],
+  "completionSymbols": ["ql:quickload", "cl-who:with-html-output-to-string", "cl-who:with-html-output", "cl-who:htm", "cl-who:fmt", "cl-who:str", "cl-who:esc"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# CL-WHO: HTML Generation\n\nCL-WHO turns S-expressions into HTML. The mapping is direct: a list `(TAG . CONTENTS)` becomes `<TAG>...</TAG>`. Nested lists nest tags. Strings appear as text content.\n\n```lisp\n(cl-who:with-html-output-to-string (s)\n  (:html\n   (:head (:title \"hi\"))\n   (:body (:h1 \"Hello\")\n          (:p \"world\"))))\n```\n\n=> `<html><head><title>hi</title></head><body><h1>Hello</h1><p>world</p></body></html>`\n\nThe macro provides three local helpers inside its body:\n\n* `(cl-who:str EXPR)` — evaluate `EXPR`, write the result as a string.\n* `(cl-who:fmt CONTROL &rest ARGS)` — `format` writing to the output stream.\n* `(cl-who:esc EXPR)` — like `str`, but HTML-escapes `&`, `<`, `>`, `\"`, `'`.\n* `(cl-who:htm TAG ...)` — escape from a runtime context back into the macro's tag-DSL.\n\nAttributes are written as a flat list right after the tag keyword: `(:a :href \"/x\" \"link text\")` => `<a href='/x'>link text</a>`.\n\nCL-WHO has no concept of components or templates — it's the bare-metal generator. Pair it with your own helper functions for reuse."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :cl-who)",
+      "expected": "(:CL-WHO)",
+      "explain": "Load CL-WHO."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-who:with-html-output-to-string (s) (:p \"hi\"))",
+      "expected": "\"<p>hi</p>\"",
+      "explain": "A single tag with text content."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-who:with-html-output-to-string (s) (:ul (:li \"a\") (:li \"b\")))",
+      "expected": "\"<ul><li>a</li><li>b</li></ul>\"",
+      "explain": "Nested tags."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-who:with-html-output-to-string (s) (:a :href \"/x\" \"link\"))",
+      "expected": "\"<a href='/x'>link</a>\"",
+      "explain": "Attributes are interleaved keyword/value pairs after the tag."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-who:with-html-output-to-string (s) (let ((name \"ada\")) (cl-who:htm (:p (cl-who:str name)))))",
+      "expected": "\"<p>ada</p>\"",
+      "explain": "STR writes a runtime value into the output. HTM lets us return to the tag DSL after the LET."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define RENDER-TITLE (S) returning an HTML string of the form \"<h1>S</h1>\" (no escaping, S is plain ASCII without special chars). Use CL-WHO:WITH-HTML-OUTPUT-TO-STRING and CL-WHO:STR.",
+      "starter": "(defun render-title (s)\n  )",
+      "hint": "(cl-who:with-html-output-to-string (out) (:h1 (cl-who:str s))).",
+      "tests": [
+        { "call": "(render-title \"Hello\")", "equals": "\"<h1>Hello</h1>\"" },
+        { "call": "(render-title \"Welcome\")", "equals": "\"<h1>Welcome</h1>\"" }
+      ]
+    }
+  ]
+}

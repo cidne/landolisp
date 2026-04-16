@@ -1,0 +1,73 @@
+{
+  "id": "035-block-return",
+  "title": "BLOCK, RETURN-FROM, and Non-local Exits",
+  "track": "controlflow",
+  "order": 35,
+  "estimatedMinutes": 11,
+  "prerequisites": ["034-loop"],
+  "completionSymbols": ["block", "return-from", "return", "loop", "dolist", "tagbody", "go", "catch", "throw", "defun"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# BLOCK, RETURN-FROM, and Non-local Exits\n\n`(block name body...)` introduces a named, lexically-scoped escape point. Inside the body, `(return-from name value)` immediately exits the block, returning `value`.\n\n```lisp\n(block found\n  (dolist (x '(1 2 3 4 5))\n    (when (= x 3)\n      (return-from found x))))   ; => 3\n```\n\nA few facts that trip people up:\n\n* Every `defun`'s body is implicitly wrapped in `(block <name> ...)`, so `(return-from my-function value)` works inside `my-function`.\n* `loop` is wrapped in `(block nil ...)`. So is `dolist` and `dotimes`. The shorthand `(return value)` is `(return-from nil value)` — it exits the **innermost** unnamed block.\n* `block` names live in their own namespace (separate from variables and functions). They are *not* dynamic: the name is resolved lexically.\n\nTwo older non-local exit mechanisms exist for completeness:\n\n* `tagbody` / `go` — labels and goto. Practically obsolete except inside macros.\n* `catch` / `throw` — dynamic (runtime) escape, looked up by tag rather than lexically. Used before `block`/`return-from` were widely understood; today most code prefers `block` or the condition system.\n\nWe show one tiny example of each below; reach for `block`/`return-from` by default."
+    },
+    {
+      "kind": "example",
+      "code": "(block found (dolist (x '(1 2 3 4 5)) (when (= x 3) (return-from found x))))",
+      "expected": "3",
+      "explain": "Early exit from a named block."
+    },
+    {
+      "kind": "example",
+      "code": "(block top (+ 1 (return-from top 99) 1000))",
+      "expected": "99",
+      "explain": "RETURN-FROM bypasses everything: the + is never completed."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for i from 1 to 10 do (when (= i 4) (return :found)))",
+      "expected": ":FOUND",
+      "explain": "(return ...) exits LOOP's implicit (BLOCK NIL ...)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun first-even (xs) (dolist (x xs) (when (evenp x) (return-from first-even x)))) (first-even '(1 3 5 4 7)))",
+      "expected": "4",
+      "explain": "RETURN-FROM works on the function's implicit block."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((i 0)) (tagbody start (incf i) (when (< i 3) (go start))) i)",
+      "expected": "3",
+      "explain": "TAGBODY/GO: labels are bare symbols inside the body. Use sparingly — almost always there is a clearer construct."
+    },
+    {
+      "kind": "example",
+      "code": "(catch 'done (dotimes (i 100) (when (= i 7) (throw 'done :seven))))",
+      "expected": ":SEVEN",
+      "explain": "CATCH/THROW: dynamic (runtime) tag matching. Modern code prefers BLOCK/RETURN-FROM."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define FIRST-MATCH that returns the first element of XS for which PRED returns true, or NIL if none. Use BLOCK and RETURN-FROM (do not call FIND).",
+      "starter": "(defun first-match (pred xs)\n  )",
+      "hint": "(block nil (dolist (x xs) (when (funcall pred x) (return-from nil x)))).",
+      "tests": [
+        { "call": "(first-match #'evenp '(1 3 5 4 7))", "equals": "4" },
+        { "call": "(first-match #'evenp '(1 3 5))", "equals": "NIL" },
+        { "call": "(first-match #'plusp '(-2 -1 0 5 -3))", "equals": "5" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define INDEX-OF that returns the 0-based index of the first occurrence of TARGET in XS (using EQL), or NIL if not present. Use LOOP with RETURN.",
+      "starter": "(defun index-of (target xs)\n  )",
+      "hint": "(loop for x in xs for i from 0 when (eql x target) do (return i)).",
+      "tests": [
+        { "call": "(index-of 'c '(a b c d))", "equals": "2" },
+        { "call": "(index-of 'a '(a b c))", "equals": "0" },
+        { "call": "(index-of 'z '(a b c))", "equals": "NIL" }
+      ]
+    }
+  ]
+}

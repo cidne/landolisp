@@ -1,0 +1,43 @@
+{
+  "id": "074-search-path",
+  "title": "How ASDF Finds Systems: *CENTRAL-REGISTRY* and Source Registry",
+  "track": "system",
+  "order": 74,
+  "estimatedMinutes": 10,
+  "prerequisites": ["073-components-and-modules"],
+  "completionSymbols": ["asdf:*central-registry*", "asdf:initialize-source-registry", "asdf:find-system", "asdf:load-asd", "asdf:locate-system", "ql:*local-project-directories*"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# How ASDF Finds Systems: *CENTRAL-REGISTRY* and Source Registry\n\nWhen you say `(asdf:load-system :foo)`, ASDF needs to find `foo.asd` somewhere on disk. Two mechanisms answer:\n\n**1. The legacy `*central-registry*`.** A list of directory pathnames. ASDF probes each for a matching `.asd` file:\n\n```lisp\n(push #P\"/home/me/code/cool/\" asdf:*central-registry*)\n(asdf:find-system :cool)\n```\n\nFast, ad-hoc, but global mutable state.\n\n**2. The Source Registry.** A configuration file at `~/.config/common-lisp/source-registry.conf` (or fragments in `source-registry.conf.d/`) plus environment variable `CL_SOURCE_REGISTRY`. Entries declare directories or trees to scan recursively. ASDF caches the result. This is the modern way.\n\n```lisp\n;; source-registry.conf\n(:source-registry\n  (:tree \"/home/me/code/\")\n  :inherit-configuration)\n```\n\n**3. Quicklisp.** When loaded, Quicklisp adds two things: its `dists/quicklisp/software/` (downloaded systems) and `~/quicklisp/local-projects/` (yours, by convention) to ASDF's search. Drop a project in `local-projects/` and `(ql:quickload :myproj)` finds it.\n\nFor scripts and one-offs, you can skip the registry entirely with `(asdf:load-asd #P\"/abs/path/to/foo.asd\")`. That registers the system without putting its directory on the search path."
+    },
+    {
+      "kind": "example",
+      "code": "(listp asdf:*central-registry*)",
+      "expected": "T",
+      "explain": "*CENTRAL-REGISTRY* is just a list. You can PUSH onto it from the REPL."
+    },
+    {
+      "kind": "example",
+      "code": "(symbolp 'asdf:*central-registry*)",
+      "expected": "T",
+      "explain": "Confirms the symbol is exported from ASDF (no error reading it)."
+    },
+    {
+      "kind": "example",
+      "code": "(fboundp 'asdf:initialize-source-registry)",
+      "expected": "T",
+      "explain": "INITIALIZE-SOURCE-REGISTRY is the function that re-reads source-registry.conf. Calling it picks up new directories without restarting Lisp."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define REGISTRY-CONTAINS-P (PATH) returning T iff PATH (a pathname) is currently on ASDF:*CENTRAL-REGISTRY*. Use EQUAL for pathname comparison.",
+      "starter": "(defun registry-contains-p (path)\n  )",
+      "hint": "(and (member path asdf:*central-registry* :test #'equal) t).",
+      "tests": [
+        { "call": "(registry-contains-p #P\"/no/such/path/\")", "equals": "NIL" },
+        { "call": "(let ((p #P\"/tmp/registry-demo/\")) (push p asdf:*central-registry*) (prog1 (registry-contains-p p) (setf asdf:*central-registry* (remove p asdf:*central-registry* :test #'equal))))", "equals": "T" }
+      ]
+    }
+  ]
+}

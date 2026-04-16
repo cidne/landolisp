@@ -1,0 +1,102 @@
+{
+  "id": "034-loop",
+  "title": "The LOOP Macro",
+  "track": "controlflow",
+  "order": 34,
+  "estimatedMinutes": 15,
+  "prerequisites": ["033-dolist-dotimes"],
+  "completionSymbols": ["loop", "for", "in", "across", "from", "to", "by", "collect", "sum", "count", "maximize", "minimize", "when", "unless", "while", "until", "finally", "return", "do"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# The LOOP Macro\n\n`loop` is Common Lisp's swiss-army iteration macro. It has its own little keyword-driven sub-language. Critics call it un-Lispy; defenders call it readable. You will see it everywhere, so learn to read it.\n\nThe **simple** form just runs forever:\n\n```lisp\n(loop (do-something))   ; infinite, until something throws or returns\n```\n\nThe **extended** form uses clauses. The big building blocks:\n\n* **Iteration drivers** — pick the values for a variable each pass.\n  * `for x in list` — successive elements of a list.\n  * `for x across vector` — successive elements of a vector/string.\n  * `for i from a [to b] [by step]` — numeric range. `to` is inclusive; `below` is exclusive; `downto` and `above` step downward.\n  * `for x = expr [then expr2]` — start with `expr`, then re-evaluate `expr2` each pass.\n* **Accumulators** — collect a result.\n  * `collect x` — list of values.\n  * `sum x`, `count test`, `maximize x`, `minimize x`.\n* **Conditional clauses** — `when test ...`, `unless test ...`.\n* **Termination** — `while test` (continue while true), `until test` (continue until true), or `for` clauses that exhaust their driver.\n* **Epilogue / early exit** — `finally (return ...)` runs after the loop ends; `return form` jumps out immediately.\n\nMultiple drivers iterate **in parallel** and the loop ends when any one of them is exhausted."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for i from 1 to 5 collect i)",
+      "expected": "(1 2 3 4 5)",
+      "explain": "Numeric range with COLLECT — the canonical RANGE recipe."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for x in '(1 2 3 4 5) sum x)",
+      "expected": "15",
+      "explain": "SUM accumulates a number."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for x in '(1 2 3 4 5) when (oddp x) collect x)",
+      "expected": "(1 3 5)",
+      "explain": "WHEN filters which items reach the accumulator."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for x across #(10 20 30 40) maximize x)",
+      "expected": "40",
+      "explain": "ACROSS iterates a vector. MAXIMIZE keeps the largest value."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for i from 0 below 10 by 2 collect i)",
+      "expected": "(0 2 4 6 8)",
+      "explain": "BELOW is exclusive; BY sets the step."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for x in '(a b c d) for i from 0 collect (list i x))",
+      "expected": "((0 A) (1 B) (2 C) (3 D))",
+      "explain": "Two parallel drivers — pair index with element."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for i from 1 count (evenp i) until (> i 10))",
+      "expected": "5",
+      "explain": "COUNT increments on each true test. UNTIL terminates the loop."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for x in '(1 2 3 -1 4) while (plusp x) sum x)",
+      "expected": "6",
+      "explain": "WHILE stops the loop as soon as its test fails — sums 1+2+3, then -1 stops it."
+    },
+    {
+      "kind": "example",
+      "code": "(loop for i from 1 to 5 sum i into total finally (return (list :total total)))",
+      "expected": "(:TOTAL 15)",
+      "explain": "INTO names a sub-accumulator; FINALLY runs after the loop and we RETURN a custom value."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SQUARES that returns (1 4 9 ... N*N) for N >= 1, using LOOP.",
+      "starter": "(defun squares (n)\n  )",
+      "hint": "(loop for i from 1 to n collect (* i i)).",
+      "tests": [
+        { "call": "(squares 5)", "equals": "(1 4 9 16 25)" },
+        { "call": "(squares 1)", "equals": "(1)" },
+        { "call": "(squares 3)", "equals": "(1 4 9)" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-EVENS that returns the number of even numbers in a list, using LOOP and COUNT.",
+      "starter": "(defun count-evens (xs)\n  )",
+      "hint": "(loop for x in xs count (evenp x)).",
+      "tests": [
+        { "call": "(count-evens '(1 2 3 4 5 6))", "equals": "3" },
+        { "call": "(count-evens nil)", "equals": "0" },
+        { "call": "(count-evens '(1 3 5))", "equals": "0" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAX-ABS that returns the largest absolute value in a non-empty list of numbers, using LOOP and MAXIMIZE.",
+      "starter": "(defun max-abs (xs)\n  )",
+      "hint": "(loop for x in xs maximize (abs x)).",
+      "tests": [
+        { "call": "(max-abs '(1 -5 3 -2))", "equals": "5" },
+        { "call": "(max-abs '(-7))", "equals": "7" },
+        { "call": "(max-abs '(0 0 0))", "equals": "0" }
+      ]
+    }
+  ]
+}

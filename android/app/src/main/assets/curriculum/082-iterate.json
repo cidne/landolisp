@@ -1,0 +1,56 @@
+{
+  "id": "082-iterate",
+  "title": "Iterate: A Lispier LOOP",
+  "track": "libraries",
+  "order": 82,
+  "estimatedMinutes": 12,
+  "prerequisites": ["081-trivia"],
+  "completionSymbols": ["ql:quickload", "iterate:iter", "iterate:for", "iterate:collect", "iterate:sum", "iterate:counting", "iterate:finding", "iterate:while", "iterate:in"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Iterate: A Lispier LOOP\n\nThe `loop` macro is powerful but uses its own quasi-English mini-language. Iterate is its rival: same range of features, but everything is a parenthesised Lisp form.\n\n```lisp\n(iterate:iter (iterate:for i :from 1 :to 10)\n              (iterate:collect (* i i)))\n; => (1 4 9 16 25 36 49 64 81 100)\n```\n\nKey clauses (each is a normal Lisp form, parenthesised):\n\n* `(for VAR :from N :to M)` — integer range, inclusive.\n* `(for VAR :in LIST)` — element-by-element iteration.\n* `(for VAR :on LIST)` — successive cdrs.\n* `(collect EXPR)` — build a list.\n* `(sum EXPR)`, `(counting EXPR)`, `(maximize EXPR)`, `(minimize EXPR)` — accumulators.\n* `(finding X :such-that (predicate X))` — return the first matching element.\n* `(while EXPR)`, `(until EXPR)` — termination.\n* `(in OUTER-ITER (collect ...))` — nested iteration.\n\nThe big practical advantage over `loop`: clauses compose. You can write your own with `defmacro-clause`. Many people who hate `loop` love `iter`."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :iterate)",
+      "expected": "(:ITERATE)",
+      "explain": "Load Iterate."
+    },
+    {
+      "kind": "example",
+      "code": "(iterate:iter (iterate:for i :from 1 :to 5) (iterate:sum i))",
+      "expected": "15",
+      "explain": "Sum 1..5 = 15."
+    },
+    {
+      "kind": "example",
+      "code": "(iterate:iter (iterate:for x :in '(1 2 3 4 5)) (iterate:collect (* x x)))",
+      "expected": "(1 4 9 16 25)",
+      "explain": "Square each element, collect into a list."
+    },
+    {
+      "kind": "example",
+      "code": "(iterate:iter (iterate:for x :in '(1 2 3 4 5)) (iterate:counting (evenp x)))",
+      "expected": "2",
+      "explain": "COUNTING accumulates 1 each iteration when the expression is true."
+    },
+    {
+      "kind": "example",
+      "code": "(iterate:iter (iterate:for x :in '(7 2 9 3 5)) (iterate:maximize x))",
+      "expected": "9",
+      "explain": "MAXIMIZE tracks the largest seen value."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SUM-OF-SQUARES (LIST) returning the sum of the squares of LIST's elements. Use ITERATE:ITER and ITERATE:SUM.",
+      "starter": "(defun sum-of-squares (list)\n  )",
+      "hint": "(iterate:iter (iterate:for x :in list) (iterate:sum (* x x))).",
+      "tests": [
+        { "call": "(sum-of-squares '())", "equals": "0" },
+        { "call": "(sum-of-squares '(1 2 3))", "equals": "14" },
+        { "call": "(sum-of-squares '(3 4))", "equals": "25" }
+      ]
+    }
+  ]
+}

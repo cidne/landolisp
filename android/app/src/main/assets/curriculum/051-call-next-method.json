@@ -1,0 +1,43 @@
+{
+  "id": "051-call-next-method",
+  "title": "CALL-NEXT-METHOD and NEXT-METHOD-P",
+  "track": "clos",
+  "order": 51,
+  "estimatedMinutes": 10,
+  "prerequisites": ["050-method-combination"],
+  "completionSymbols": ["call-next-method", "next-method-p", "defmethod", "defgeneric", "defclass", "list", "if"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# CALL-NEXT-METHOD and NEXT-METHOD-P\n\nInside a method, `(call-next-method)` invokes the **next applicable method** for the same generic call — the next-most-specific primary if you're in a primary, or the next `:around` layer if you're in an `:around`.\n\nWith no arguments, the same arguments are passed through. With explicit arguments, you can change them — but the new values must still satisfy the specialisers, or you'll signal an error.\n\n`(next-method-p)` returns true if there *is* a next method. Use it to guard `call-next-method` calls when you're not sure another method exists:\n\n```lisp\n(defmethod describe-it ((x dog))\n  (cons :dog (when (next-method-p) (call-next-method))))\n```\n\nIf you call `call-next-method` and there is no next method, it signals an error. So either know there is one, or check first.\n\nThis is how you build cooperative chains: a subclass method does its part, then asks the superclass method to do its part on top."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass animal () ()) (defclass dog (animal) ()) (defgeneric tags (x)) (defmethod tags ((x animal)) (list :animal)) (defmethod tags ((x dog)) (cons :dog (call-next-method))) (tags (make-instance 'dog)))",
+      "expected": "(:DOG :ANIMAL)",
+      "explain": "DOG's method prepends :DOG, then chains to ANIMAL's method which returns (:ANIMAL)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass animal () ()) (defgeneric tags (x)) (defmethod tags ((x animal)) (if (next-method-p) (cons :animal (call-next-method)) (list :animal))) (tags (make-instance 'animal)))",
+      "expected": "(:ANIMAL)",
+      "explain": "NEXT-METHOD-P guarded the call; here there is no next method so we just return (list :animal)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass a () ()) (defclass b (a) ()) (defclass c (b) ()) (defgeneric stack (x)) (defmethod stack ((x a)) '(:a)) (defmethod stack ((x b)) (cons :b (call-next-method))) (defmethod stack ((x c)) (cons :c (call-next-method))) (stack (make-instance 'c)))",
+      "expected": "(:C :B :A)",
+      "explain": "C's method chains to B's, which chains to A's. Each prepends its tag."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define classes ITEM, FOOD (extends ITEM), APPLE (extends FOOD). Define generic function CATEGORIES returning a list. The ITEM method returns (:item); FOOD prepends :food via call-next-method; APPLE prepends :apple via call-next-method.",
+      "starter": "(defclass item () ())\n(defclass food (item) ())\n(defclass apple (food) ())\n\n(defgeneric categories (x))\n",
+      "tests": [
+        { "call": "(categories (make-instance 'apple))", "equals": "(:APPLE :FOOD :ITEM)" },
+        { "call": "(categories (make-instance 'food))", "equals": "(:FOOD :ITEM)" },
+        { "call": "(categories (make-instance 'item))", "equals": "(:ITEM)" }
+      ]
+    }
+  ]
+}

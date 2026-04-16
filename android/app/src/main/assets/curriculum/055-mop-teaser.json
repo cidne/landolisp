@@ -1,0 +1,49 @@
+{
+  "id": "055-mop-teaser",
+  "title": "Metaobject Protocol Teaser",
+  "track": "clos",
+  "order": 55,
+  "estimatedMinutes": 10,
+  "prerequisites": ["054-change-class"],
+  "completionSymbols": ["class-of", "find-class", "class-name", "type-of", "typep", "subtypep", "defclass", "make-instance"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Metaobject Protocol Teaser\n\nIn CLOS, *classes are themselves objects* — instances of a class called `standard-class`. *Generic functions* are instances of `standard-generic-function`. *Methods* are instances of `standard-method`. The protocol that lets you look at, and customise, these objects is the **Metaobject Protocol** (MOP).\n\nThe MOP is described in *The Art of the Metaobject Protocol* (Kiczales et al., 1991). It is not part of the ANSI standard, but every major implementation provides it. SBCL exposes it in the package `sb-mop`. The portability shim everyone uses is the library `closer-mop` (`closer-mop:class-precedence-list`, `closer-mop:class-direct-slots`, etc.).\n\nFor everyday work you only need a few standard CL accessors:\n\n* `(class-of obj)` → the class metaobject of the object.\n* `(class-name class)` → its name (a symbol).\n* `(find-class 'name)` → look up a class by name.\n* `(type-of obj)`, `(typep obj 'type)`, `(subtypep 'a 'b)` — type queries.\n\nWith the MOP you can:\n\n* Walk slot definitions and build serialisers.\n* Define metaclasses that, say, persist instances or auto-add a logging accessor.\n* Intercept method addition.\n\nWe won't go deeper here; this lesson just gives you the vocabulary. If you ever read a sentence like \"specialise on the metaclass\" without flinching, you've made it."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass widget () ()) (class-name (class-of (make-instance 'widget))))",
+      "expected": "WIDGET",
+      "explain": "Every instance carries its class; CLASS-NAME pulls the symbol back out."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass widget () ()) (eq (find-class 'widget) (class-of (make-instance 'widget))))",
+      "expected": "T",
+      "explain": "FIND-CLASS and CLASS-OF give the same metaobject."
+    },
+    {
+      "kind": "example",
+      "code": "(typep 42 'integer)",
+      "expected": "T",
+      "explain": "TYPEP is the runtime type test."
+    },
+    {
+      "kind": "example",
+      "code": "(subtypep 'integer 'number)",
+      "expected": "T",
+      "explain": "SUBTYPEP returns T plus a confidence flag (T = answer is reliable). We only see the primary value."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a class GADGET with no slots and no superclasses. Define CLASS-NAME-OF that takes any instance and returns the name (symbol) of its class.",
+      "starter": "(defclass gadget () ())\n\n(defun class-name-of (obj)\n  )",
+      "hint": "(class-name (class-of obj)).",
+      "tests": [
+        { "call": "(class-name-of (make-instance 'gadget))", "equals": "GADGET" },
+        { "call": "(class-name-of 42)", "equals": "FIXNUM" }
+      ]
+    }
+  ]
+}

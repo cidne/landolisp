@@ -1,0 +1,62 @@
+{
+  "id": "078-alexandria",
+  "title": "Alexandria: The Standard Toolbox",
+  "track": "libraries",
+  "order": 78,
+  "estimatedMinutes": 12,
+  "prerequisites": ["077-asdf-worked-example"],
+  "completionSymbols": ["ql:quickload", "alexandria:flatten", "alexandria:hash-table-keys", "alexandria:plist-hash-table", "alexandria:if-let", "alexandria:when-let", "alexandria:compose", "alexandria:curry"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Alexandria: The Standard Toolbox\n\nAlexandria is the closest thing the Common Lisp world has to a stdlib supplement. It is conservative, dependency-free, and present in essentially every project. If a utility you'd expect doesn't exist in CL, check Alexandria first.\n\nA tour of essentials:\n\n* `flatten` — recursively flatten a tree of conses.\n* `hash-table-keys`, `hash-table-values`, `hash-table-alist`, `alist-hash-table`, `plist-hash-table` — hash-table conversions.\n* `if-let`, `when-let`, `when-let*` — bind and test in one go.\n* `compose`, `curry`, `rcurry` — function-combinator helpers.\n* `mappend` — like `mapcan` but doesn't destroy the input lists.\n* `with-gensyms`, `once-only` — macro-writing helpers.\n* `random-elt`, `shuffle` — sequence randomness.\n\nBy convention you import the symbols you use rather than `:use #:alexandria` everywhere — Alexandria has many short names that collide with project-specific symbols."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :alexandria)",
+      "expected": "(:ALEXANDRIA)",
+      "explain": "QL:QUICKLOAD returns a list of the systems that were requested."
+    },
+    {
+      "kind": "example",
+      "code": "(alexandria:flatten '(1 (2 (3 (4))) 5))",
+      "expected": "(1 2 3 4 5)",
+      "explain": "FLATTEN walks the tree, collecting non-cons leaves in order."
+    },
+    {
+      "kind": "example",
+      "code": "(alexandria:plist-hash-table '(:a 1 :b 2) :test 'eq)",
+      "expected": "",
+      "explain": "Returns a hash table; the printed form varies by implementation, so we just confirm it builds. The next example checks a key."
+    },
+    {
+      "kind": "example",
+      "code": "(gethash :a (alexandria:plist-hash-table '(:a 1 :b 2) :test 'eq))",
+      "expected": "1",
+      "explain": "Round-trip: build the table from a plist, look up :A. Returns 1."
+    },
+    {
+      "kind": "example",
+      "code": "(funcall (alexandria:compose #'1+ #'1+) 10)",
+      "expected": "12",
+      "explain": "COMPOSE applies right-to-left: first inner 1+ gives 11, outer 1+ gives 12."
+    },
+    {
+      "kind": "example",
+      "code": "(funcall (alexandria:curry #'+ 100) 5)",
+      "expected": "105",
+      "explain": "CURRY pre-binds 100 as the first argument; the resulting function takes the rest."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define LEAVES (TREE) returning the count of non-cons leaves in TREE. Use ALEXANDRIA:FLATTEN and LENGTH.",
+      "starter": "(defun leaves (tree)\n  )",
+      "hint": "(length (alexandria:flatten tree)).",
+      "tests": [
+        { "call": "(leaves '(1 2 3))", "equals": "3" },
+        { "call": "(leaves '((a b) (c (d e))))", "equals": "5" },
+        { "call": "(leaves nil)", "equals": "0" }
+      ]
+    }
+  ]
+}

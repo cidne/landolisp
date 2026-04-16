@@ -1,0 +1,50 @@
+{
+  "id": "069-package-gotchas",
+  "title": "Package Gotchas: :CL vs :COMMON-LISP, Locks, Collisions",
+  "track": "packages",
+  "order": 69,
+  "estimatedMinutes": 10,
+  "prerequisites": ["068-find-intern"],
+  "completionSymbols": ["defpackage", ":use", ":shadow", "shadowing-import", "package-locks", "find-package", "rename-package", "package-error"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Package Gotchas: :CL vs :COMMON-LISP, Locks, Collisions\n\nA tour of the things that bite first-timers.\n\n**Nicknames.** `COMMON-LISP` has the nickname `CL`. `(:use #:cl)` and `(:use #:common-lisp)` are identical — both refer to the *same* package, found by either name. The same applies to `KEYWORD` (no standard nickname) and most popular libraries (`alexandria` has the nickname `alex` in some configurations; check `(package-nicknames pkg)`).\n\n**Name collisions.** Suppose `:my-pkg` does `(:use #:cl #:other-pkg)` and **both** export a symbol called `COUNT`. The second use signals a `package-error` *at `defpackage` time*. To resolve, either:\n\n* `(:shadow #:count)` — declare *your own* `count` symbol takes precedence; the inherited ones become invisible.\n* `(:shadowing-import-from #:other-pkg #:count)` — explicitly say \"the `count` from `other-pkg` wins\".\n\n**Package locks.** SBCL and most modern implementations **lock** the `COMMON-LISP` package: `(defun car (x) ...)` signals `package-locked-error`. This stops you from accidentally redefining `car`. To override, `(sb-ext:unlock-package :cl)` (SBCL) — but think carefully first.\n\n**Already-exists.** Re-evaluating `(defpackage :my-pkg ...)` with a *different* `:use` list updates the existing package. Removing exports from a package that downstream code refers to is ABI-breaking; many shops treat `defpackage` as append-only.\n\n**Case.** Package and symbol names are stored upper-case. `(find-package \"my-pkg\")` returns `NIL`; you want `(find-package \"MY-PKG\")` or, more commonly, `(find-package :my-pkg)` (a keyword whose name is already upper-case)."
+    },
+    {
+      "kind": "example",
+      "code": "(eq (find-package :cl) (find-package :common-lisp))",
+      "expected": "T",
+      "explain": "CL is a nickname for COMMON-LISP. Same package object."
+    },
+    {
+      "kind": "example",
+      "code": "(find-package \"cl\")",
+      "expected": "NIL",
+      "explain": "Lower-case string doesn't match. Package names are stored upper-case."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (defpackage #:colliding (:use #:cl) (:shadow #:count)) (error () :collided) (:no-error (p) (length (package-shadowing-symbols p))))",
+      "expected": "1",
+      "explain": "The :SHADOW clause registers our own COUNT, suppressing the inherited CL:COUNT. PACKAGE-SHADOWING-SYMBOLS confirms 1 shadow."
+    },
+    {
+      "kind": "example",
+      "code": "(member \"CL\" (package-nicknames (find-package :common-lisp)) :test #'string=)",
+      "expected": "(\"CL\")",
+      "explain": "MEMBER returns the tail starting at the match. CL is among COMMON-LISP's nicknames."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define HAS-NICKNAME-P (PKG-NAME NICK) returning T iff PKG-NAME's package has NICK (string compare, case-sensitive after upcase) among its nicknames.",
+      "starter": "(defun has-nickname-p (pkg-name nick)\n  )",
+      "hint": "(and (find-package pkg-name) (member (string-upcase nick) (package-nicknames pkg-name) :test #'string=) t).",
+      "tests": [
+        { "call": "(has-nickname-p \"COMMON-LISP\" \"CL\")", "equals": "T" },
+        { "call": "(has-nickname-p \"COMMON-LISP\" \"NOPE\")", "equals": "NIL" },
+        { "call": "(has-nickname-p \"NO-SUCH-PKG\" \"X\")", "equals": "NIL" }
+      ]
+    }
+  ]
+}

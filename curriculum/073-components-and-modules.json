@@ -1,0 +1,44 @@
+{
+  "id": "073-components-and-modules",
+  "title": "File Ordering, :FILE, and :MODULE",
+  "track": "system",
+  "order": 73,
+  "estimatedMinutes": 10,
+  "prerequisites": ["072-defsystem"],
+  "completionSymbols": ["asdf:defsystem", ":serial", ":file", ":module", ":components", ":depends-on", ":pathname", ":static-file"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# File Ordering, :FILE, and :MODULE\n\nReal projects have lots of files in subdirectories. ASDF gives you two ways to express order: implicit serial, or explicit per-component.\n\n**Serial.** `:serial t` says \"load components in the listed order; each implicitly depends on the prior one\":\n\n```lisp\n:serial t\n:components ((:file \"package\")\n             (:file \"util\")\n             (:file \"core\"))\n```\n\nReorder one entry and the dependencies follow.\n\n**Explicit.** Drop `:serial` and put `:depends-on` on each file:\n\n```lisp\n:components ((:file \"package\")\n             (:file \"util\" :depends-on (\"package\"))\n             (:file \"core\" :depends-on (\"package\" \"util\")))\n```\n\nMore typing, but lets ASDF parallelise where possible.\n\n**Modules.** A `(:module \"NAME\" :components (...))` is a subdirectory. By default the directory name matches `NAME`; override with `:pathname \"some-dir\"`. Modules nest, and `:depends-on` works between them just like between files.\n\n```lisp\n:components\n((:file \"package\")\n (:module \"backend\"\n  :depends-on (\"package\")\n  :components ((:file \"db\") (:file \"http\")))\n (:module \"frontend\"\n  :depends-on (\"backend\")\n  :components ((:file \"view\") (:file \"controller\"))))\n```\n\nOther component types you'll occasionally see: `:static-file` (a non-Lisp data file ASDF should know about) and `:cl-source-file` (the long form of `:file`)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:order-demo :serial t :components ((:file \"a\") (:file \"b\") (:file \"c\"))) (length (asdf:component-children (asdf:find-system :order-demo))))",
+      "expected": "3",
+      "explain": "Three top-level components. COMPONENT-CHILDREN returns them in declaration order."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:order-demo2 :serial t :components ((:file \"a\") (:file \"b\"))) (mapcar #'asdf:component-name (asdf:component-children (asdf:find-system :order-demo2))))",
+      "expected": "(\"a\" \"b\")",
+      "explain": "Component names are strings, returned in declaration order."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:nest-demo :serial t :components ((:file \"top\") (:module \"sub\" :components ((:file \"inner\"))))) (asdf:component-name (second (asdf:component-children (asdf:find-system :nest-demo)))))",
+      "expected": "\"sub\"",
+      "explain": "The second child is the module named SUB. Modules are first-class components."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COMPONENT-COUNT (SYS-NAME) returning the number of *immediate* children of system SYS-NAME (i.e. top-level components, not recursing into modules).",
+      "starter": "(defun component-count (sys-name)\n  )",
+      "hint": "(length (asdf:component-children (asdf:find-system sys-name))).",
+      "tests": [
+        { "call": "(progn (asdf:defsystem #:cc-a :components ()) (component-count :cc-a))", "equals": "0" },
+        { "call": "(progn (asdf:defsystem #:cc-b :serial t :components ((:file \"x\") (:file \"y\"))) (component-count :cc-b))", "equals": "2" },
+        { "call": "(progn (asdf:defsystem #:cc-c :serial t :components ((:file \"a\") (:module \"m\" :components ((:file \"b\") (:file \"c\"))) (:file \"d\"))) (component-count :cc-c))", "equals": "3" }
+      ]
+    }
+  ]
+}

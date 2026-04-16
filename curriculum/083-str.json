@@ -1,0 +1,62 @@
+{
+  "id": "083-str",
+  "title": "STR: A Modern String API",
+  "track": "libraries",
+  "order": 83,
+  "estimatedMinutes": 10,
+  "prerequisites": ["082-iterate"],
+  "completionSymbols": ["ql:quickload", "str:concat", "str:split", "str:join", "str:trim", "str:replace-all", "str:starts-with-p", "str:contains?", "str:upcase"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# STR: A Modern String API\n\nCommon Lisp's built-in string support is competent but verbose: `concatenate 'string`, `subseq`, `position`, manual split. The `str` library wraps these with names borrowed from Python and Clojure.\n\n```lisp\n(str:concat \"hello, \" \"world\")     ; => \"hello, world\"\n(str:split  \",\" \"a,b,c\")            ; => (\"a\" \"b\" \"c\")\n(str:join   \"-\" '(\"a\" \"b\" \"c\"))     ; => \"a-b-c\"\n(str:trim   \"  hi  \")               ; => \"hi\"\n(str:replace-all \"foo\" \"bar\" \"foofoo\") ; => \"barbar\"\n(str:starts-with-p \"hi\" \"hi there\") ; => T\n(str:contains?     \"er\" \"hi there\") ; => T\n(str:upcase  \"abc\")                  ; => \"ABC\"\n```\n\nMost functions take their target string as the **last** argument, mirroring functional-language conventions and making them easy to compose with `~>` (Serapeum) or `alexandria:compose`.\n\n`str` does not depend on cl-ppcre by default — its split/replace are simple substring operations. Use `cl-ppcre` when you need real regex."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :str)",
+      "expected": "(:STR)",
+      "explain": "Load STR."
+    },
+    {
+      "kind": "example",
+      "code": "(str:concat \"hello, \" \"world\")",
+      "expected": "\"hello, world\"",
+      "explain": "CONCAT is the most-asked-for function CL doesn't ship."
+    },
+    {
+      "kind": "example",
+      "code": "(str:split \",\" \"a,b,c\")",
+      "expected": "(\"a\" \"b\" \"c\")",
+      "explain": "Split by literal substring; returns a list of pieces."
+    },
+    {
+      "kind": "example",
+      "code": "(str:join \"-\" '(\"a\" \"b\" \"c\"))",
+      "expected": "\"a-b-c\"",
+      "explain": "Inverse of split."
+    },
+    {
+      "kind": "example",
+      "code": "(str:trim \"  hello  \")",
+      "expected": "\"hello\"",
+      "explain": "Strip leading and trailing whitespace."
+    },
+    {
+      "kind": "example",
+      "code": "(str:replace-all \"foo\" \"bar\" \"foofoo\")",
+      "expected": "\"barbar\"",
+      "explain": "Substring replacement (literal, not regex)."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SLUGIFY (S) that lower-cases S, trims surrounding whitespace, then replaces every space with a hyphen. Use STR functions only.",
+      "starter": "(defun slugify (s)\n  )",
+      "hint": "(str:replace-all \" \" \"-\" (str:trim (str:downcase s))).",
+      "tests": [
+        { "call": "(slugify \"Hello World\")", "equals": "\"hello-world\"" },
+        { "call": "(slugify \"  Foo Bar Baz  \")", "equals": "\"foo-bar-baz\"" },
+        { "call": "(slugify \"NoSpaces\")", "equals": "\"nospaces\"" }
+      ]
+    }
+  ]
+}

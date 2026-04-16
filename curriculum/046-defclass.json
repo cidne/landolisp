@@ -1,0 +1,49 @@
+{
+  "id": "046-defclass",
+  "title": "DEFCLASS Basics",
+  "track": "clos",
+  "order": 46,
+  "estimatedMinutes": 13,
+  "prerequisites": ["045-reader-macros"],
+  "completionSymbols": ["defclass", "make-instance", "slot-value", ":initarg", ":initform", ":accessor", ":reader", ":writer", ":type", ":allocation"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DEFCLASS Basics\n\nThe Common Lisp Object System (CLOS) is class-based but unusual. Classes describe **slots** (data) only; behaviour lives in **generic functions** (next lesson). A class definition looks like:\n\n```lisp\n(defclass point ()\n  ((x :initarg :x :accessor point-x :initform 0 :type real)\n   (y :initarg :y :accessor point-y :initform 0 :type real)))\n```\n\nThe parts:\n\n* `()` is the **superclass list**. Empty here; default is `(standard-object)`.\n* Each slot is `(slot-name option*)`. Common options:\n  * `:initarg :keyword` — name accepted by `make-instance`.\n  * `:initform expr` — default value if no initarg given. **Re-evaluated** for each new instance.\n  * `:accessor name` — auto-define a generic function reading the slot AND a `(setf name)` method to write it.\n  * `:reader name` — read-only accessor.\n  * `:writer name` — write-only accessor; called as `(setf (name obj) v)` won't work — use `(funcall (function (setf name)) v obj)` or just use `:accessor`.\n  * `:type type-spec` — declared element type. Implementations may or may not check it.\n  * `:allocation :instance` (default) or `:class` (one slot shared by all instances).\n\nTo create an instance: `(make-instance 'point :x 3 :y 4)`. To read by accessor: `(point-x p)`. To read raw: `(slot-value p 'x)`.\n\nIf you read a slot that was never initialised and has no `:initform`, `slot-value` signals `unbound-slot`. Accessors signal the same. So either set an initform, pass an initarg, or be ready to handle the condition."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass point () ((x :initarg :x :accessor point-x :initform 0) (y :initarg :y :accessor point-y :initform 0))) (point-x (make-instance 'point :x 3 :y 4)))",
+      "expected": "3",
+      "explain": "MAKE-INSTANCE accepts initargs as keyword arguments; the auto-defined accessor reads the slot."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass point () ((x :initarg :x :accessor point-x :initform 0) (y :initarg :y :accessor point-y :initform 0))) (point-y (make-instance 'point :x 3)))",
+      "expected": "0",
+      "explain": "Y wasn't passed; its INITFORM 0 is used."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass counter () ((n :accessor counter-n :initform 0 :allocation :class))) (let ((a (make-instance 'counter)) (b (make-instance 'counter))) (incf (counter-n a)) (counter-n b)))",
+      "expected": "1",
+      "explain": ":ALLOCATION :CLASS shares the slot across all instances. Bumping A's N is visible to B."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass point () ((x :initarg :x :initform 0) (y :initarg :y :initform 0))) (slot-value (make-instance 'point :x 7 :y 8) 'x))",
+      "expected": "7",
+      "explain": "SLOT-VALUE works without an accessor, but using accessors is the idiomatic interface."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a class CIRCLE with one slot RADIUS (initarg :radius, accessor circle-radius, initform 1). Define DEMO-RADIUS that returns the radius of (make-instance 'circle :radius 5).",
+      "starter": "(defclass circle () ())\n\n(defun demo-radius ()\n  )",
+      "hint": "Replace the (defclass ... ()) with a slot, and DEMO-RADIUS returns (circle-radius (make-instance 'circle :radius 5)).",
+      "tests": [
+        { "call": "(demo-radius)", "equals": "5" },
+        { "call": "(circle-radius (make-instance 'circle))", "equals": "1" }
+      ]
+    }
+  ]
+}

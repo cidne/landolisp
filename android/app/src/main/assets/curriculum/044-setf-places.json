@@ -1,0 +1,49 @@
+{
+  "id": "044-setf-places",
+  "title": "SETF and Custom Places",
+  "track": "macros",
+  "order": 44,
+  "estimatedMinutes": 12,
+  "prerequisites": ["043-symbol-macrolet"],
+  "completionSymbols": ["setf", "defsetf", "define-setf-expander", "defun", "aref", "car", "cdr", "gethash", "nth"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# SETF and Custom Places\n\n`setf` is the universal mutator. `(setf place value)` stores `value` into `place`, where a **place** is any form that names a storage location: a variable, an accessor call, `(car x)`, `(aref v i)`, `(gethash k h)`, a struct slot accessor, etc.\n\nYou can also `(setf place1 v1 place2 v2 ...)` to store several at once.\n\nThe magic is that `setf` is a macro that looks at the *form* of its first argument and rewrites it to the appropriate mutator — `(setf (car x) 99)` becomes something like `(rplaca x 99)`. This means **you** can teach `setf` about your own 'places' by telling it how to store into them.\n\nTwo ways to do that:\n\n* `(defsetf reader writer)` — short form. If `(my-get obj)` reads, and `(my-set obj value)` writes, then `(defsetf my-get my-set)` is all you need.\n* `(defsetf reader (args...) (store-var) body)` — long form, a small template for more complex setters.\n* `define-setf-expander` — the most general form, when you need full control over argument evaluation order. Rare in everyday code.\n\nOnce defined, your reader becomes a valid place, usable with `setf`, `incf`, `push`, `rotatef`, etc."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((v (vector 1 2 3))) (setf (aref v 0) 99) v)",
+      "expected": "#(99 2 3)",
+      "explain": "(SETF (AREF V 0) 99) uses SETF's built-in knowledge of AREF as a place."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((p (cons 1 2))) (setf (car p) 'a (cdr p) 'b) p)",
+      "expected": "(A . B)",
+      "explain": "Multiple places in one SETF call."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun third-of (xs) (third xs)) (defun set-third-of (xs v) (setf (nth 2 xs) v)) (defsetf third-of set-third-of) (let ((l (list 'a 'b 'c 'd))) (setf (third-of l) 'ZZZ) l))",
+      "expected": "(A B ZZZ D)",
+      "explain": "DEFSETF (short form) teaches SETF that THIRD-OF is a place whose setter is SET-THIRD-OF."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun entry (h k) (gethash k h)) (defsetf entry (h k) (v) `(setf (gethash ,k ,h) ,v)) (let ((h (make-hash-table))) (setf (entry h :x) 10) (entry h :x)))",
+      "expected": "10",
+      "explain": "DEFSETF long form: (H K) are the reader's args, (V) is the new value variable, and the body is the expansion."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a 2D-point struct POINT with slots X and Y. Define function MAG-SQ returning x*x + y*y. Then define a 'place' FIRST-OF-LIST that reads (car xs) and has a writable SETF form; use (defsetf first-of-list set-first-of-list) with a helper SET-FIRST-OF-LIST. Verify by mutating through the new place.",
+      "starter": "(defun first-of-list (xs) (car xs))\n(defun set-first-of-list (xs v) (setf (car xs) v))\n(defsetf first-of-list set-first-of-list)\n\n(defun demo ()\n  )",
+      "hint": "(defun demo () (let ((l (list 1 2 3))) (setf (first-of-list l) 99) l)).",
+      "tests": [
+        { "call": "(demo)", "equals": "(99 2 3)" },
+        { "call": "(let ((l (list 'a))) (setf (first-of-list l) 'z) l)", "equals": "(Z)" }
+      ]
+    }
+  ]
+}

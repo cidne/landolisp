@@ -1,0 +1,56 @@
+{
+  "id": "064-symbols-recap",
+  "title": "What a Symbol Is, Really",
+  "track": "packages",
+  "order": 64,
+  "estimatedMinutes": 8,
+  "prerequisites": ["063-csv-skip-bad-row"],
+  "completionSymbols": ["symbol-name", "symbol-package", "symbol-value", "symbol-function", "make-symbol", "intern", "find-symbol", "keywordp"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# What a Symbol Is, Really\n\nWe met symbols back in lesson 4 as \"variable names\". To work with packages, we need a sharper picture.\n\nA **symbol** is a Lisp object with up to four cells of state:\n\n* a **name** — a string (`(symbol-name 'foo)` => `\"FOO\"`),\n* a **home package** — the package it belongs to (`(symbol-package 'foo)` => `#<PACKAGE \"COMMON-LISP-USER\">`),\n* a **value cell** — what `(symbol-value 'foo)` returns when `foo` is bound as a variable,\n* a **function cell** — what `(symbol-function 'foo)` returns when `foo` is `defun`ed.\n\nThe key piece of new vocabulary is **home package**. Every symbol read by the reader is *interned* in some package — looked up by name, created if absent, then returned. Two reads of `foo` in the same package give you the **same** symbol object (`eq`), which is why variables and function definitions work at all.\n\n**Uninterned** symbols (created by `make-symbol` or read with `#:foo`) have no home package. They are useful for macro hygiene: each call to `(gensym)` creates a brand-new uninterned symbol that no source file can accidentally name.\n\n**Keyword** symbols (`:foo`) live in the `KEYWORD` package, are automatically self-evaluating (`(eq :foo (symbol-value :foo))`), and are exported. You've been using them as `&key` argument names and condition initargs."
+    },
+    {
+      "kind": "example",
+      "code": "(symbol-name 'foo)",
+      "expected": "\"FOO\"",
+      "explain": "The reader upcases unescaped symbol names. The name is a plain string."
+    },
+    {
+      "kind": "example",
+      "code": "(package-name (symbol-package 'car))",
+      "expected": "\"COMMON-LISP\"",
+      "explain": "CAR is interned in the COMMON-LISP package. That's where every standard symbol lives."
+    },
+    {
+      "kind": "example",
+      "code": "(eq 'foo 'foo)",
+      "expected": "T",
+      "explain": "Both reads find the same symbol in the current package. Symbols are unique by (package, name)."
+    },
+    {
+      "kind": "example",
+      "code": "(eq (make-symbol \"FOO\") (make-symbol \"FOO\"))",
+      "expected": "NIL",
+      "explain": "MAKE-SYMBOL builds a fresh, uninterned symbol every call. They share a name but are not EQ."
+    },
+    {
+      "kind": "example",
+      "code": "(keywordp :foo)",
+      "expected": "T",
+      "explain": "Symbols starting with a colon live in the KEYWORD package and self-evaluate."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SAME-SYMBOL-P (A B) returning T iff A and B are the very same symbol object. Hint: that's just EQ. (We're verifying you know symbol identity, not asking for cleverness.)",
+      "starter": "(defun same-symbol-p (a b)\n  )",
+      "tests": [
+        { "call": "(same-symbol-p 'foo 'foo)", "equals": "T" },
+        { "call": "(same-symbol-p 'foo 'bar)", "equals": "NIL" },
+        { "call": "(same-symbol-p (make-symbol \"X\") (make-symbol \"X\"))", "equals": "NIL" },
+        { "call": "(same-symbol-p :a :a)", "equals": "T" }
+      ]
+    }
+  ]
+}

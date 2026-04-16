@@ -1,0 +1,60 @@
+{
+  "id": "029-when-unless",
+  "title": "One-armed Conditionals: WHEN and UNLESS",
+  "track": "controlflow",
+  "order": 29,
+  "estimatedMinutes": 7,
+  "prerequisites": ["028-case"],
+  "completionSymbols": ["when", "unless", "progn", "print", "zerop", "plusp"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# One-armed Conditionals: WHEN and UNLESS\n\n`if` wants exactly one form per branch. When you want to do several things **only if** a test is true, reach for `when`:\n\n```lisp\n(when test\n  body1\n  body2\n  ...)\n```\n\nIt's equivalent to `(if test (progn body...))` — an implicit `progn`, and no else branch. If the test is false, `when` returns `NIL`. If true, it returns the last body form's value.\n\n`unless` is the mirror image — it runs the body **only if** the test is `NIL`:\n\n```lisp\n(unless test\n  body...)\n```\n\nStyle tip: if you're tempted to write `(if test nil something)`, use `(unless test something)` instead."
+    },
+    {
+      "kind": "example",
+      "code": "(when (> 3 2) 'hi)",
+      "expected": "HI",
+      "explain": "Test is true; body runs."
+    },
+    {
+      "kind": "example",
+      "code": "(when nil 'never)",
+      "expected": "NIL",
+      "explain": "Test is false; WHEN returns NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(unless (zerop 5) 'nonzero)",
+      "expected": "NONZERO",
+      "explain": "ZEROP is NIL for 5, so UNLESS runs its body."
+    },
+    {
+      "kind": "example",
+      "code": "(when t 1 2 3)",
+      "expected": "3",
+      "explain": "All three body forms are evaluated; the last one's value is returned."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define AT-LEAST-TEN that returns N if N is 10 or greater, otherwise NIL.",
+      "starter": "(defun at-least-ten (n)\n  )",
+      "hint": "(when (>= n 10) n).",
+      "tests": [
+        { "call": "(at-least-ten 15)", "equals": "15" },
+        { "call": "(at-least-ten 10)", "equals": "10" },
+        { "call": "(at-least-ten 9)", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define NONZERO-DOUBLE that returns 2*N if N is not zero, otherwise NIL. Use UNLESS.",
+      "starter": "(defun nonzero-double (n)\n  )",
+      "tests": [
+        { "call": "(nonzero-double 3)", "equals": "6" },
+        { "call": "(nonzero-double -4)", "equals": "-8" },
+        { "call": "(nonzero-double 0)", "equals": "NIL" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "090-fiveam",
+  "title": "FiveAM: Unit Testing",
+  "track": "libraries",
+  "order": 90,
+  "estimatedMinutes": 12,
+  "prerequisites": ["089-cl-who"],
+  "completionSymbols": ["ql:quickload", "fiveam:def-suite", "fiveam:in-suite", "fiveam:test", "fiveam:is", "fiveam:signals", "fiveam:run", "fiveam:run!"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# FiveAM: Unit Testing\n\nFiveAM is the most popular CL test framework. Three concepts: **suites** (groupings), **tests** (named bundles of checks), and **checks** (individual assertions).\n\n```lisp\n(fiveam:def-suite my-suite)\n(fiveam:in-suite my-suite)\n\n(fiveam:test arithmetic\n  (fiveam:is (= 4 (+ 2 2)))\n  (fiveam:is (= 0 (- 5 5)))\n  (fiveam:signals division-by-zero (/ 1 0)))\n```\n\nKey checks:\n\n* `(fiveam:is FORM)` — pass iff `FORM` is non-NIL. Reports the form on failure.\n* `(fiveam:is (= ...))`, `(fiveam:is (equal ...))` — the wrapped form is recognised; failures show the operand values.\n* `(fiveam:signals CONDITION-TYPE FORM)` — pass iff `FORM` signals the condition.\n* `(fiveam:finishes FORM)` — pass iff `FORM` completes without error.\n\nRunners:\n\n* `(fiveam:run 'test-name)` — run a test, return a list of result objects.\n* `(fiveam:run! 'test-name)` — run, print human-readable summary, return T iff all passed.\n* `(fiveam:run-all-tests)` — run every test in every suite.\n\nIntegrate with ASDF: `:perform (asdf:test-op (op c) (uiop:symbol-call :fiveam :run! :my-suite))` (lesson 076)."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :fiveam)",
+      "expected": "(:FIVEAM)",
+      "explain": "Load FiveAM."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (fiveam:def-suite demo-suite) (fiveam:in-suite demo-suite) (fiveam:test trivial (fiveam:is (= 4 (+ 2 2)))) (fiveam:run! 'trivial))",
+      "expected": "T",
+      "explain": "Define a suite, switch to it, define one test that always passes, run it. RUN! prints a summary and returns T because no checks failed."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (fiveam:def-suite demo-suite2) (fiveam:in-suite demo-suite2) (fiveam:test arith (fiveam:is (= 0 (- 5 5))) (fiveam:is (equal '(1 2 3) (list 1 2 3)))) (fiveam:run! 'arith))",
+      "expected": "T",
+      "explain": "Two checks in one test. Both pass."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (fiveam:def-suite demo-suite3) (fiveam:in-suite demo-suite3) (fiveam:test sig (fiveam:signals division-by-zero (/ 1 0))) (fiveam:run! 'sig))",
+      "expected": "T",
+      "explain": "SIGNALS confirms the form raises the named condition. (/ 1 0) signals DIVISION-BY-ZERO; the test passes."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a suite EX-SUITE, register a test EX-TEST inside it that asserts (= 6 (* 2 3)), then define ALL-PASS-P () that runs the test with FIVEAM:RUN! and returns its result. The grader calls (all-pass-p).",
+      "starter": "(fiveam:def-suite ex-suite)\n(fiveam:in-suite ex-suite)\n\n(fiveam:test ex-test\n  )\n\n(defun all-pass-p ()\n  )",
+      "hint": "Body of EX-TEST: (fiveam:is (= 6 (* 2 3))). Body of ALL-PASS-P: (fiveam:run! 'ex-test).",
+      "tests": [
+        { "call": "(all-pass-p)", "equals": "T" }
+      ]
+    }
+  ]
+}

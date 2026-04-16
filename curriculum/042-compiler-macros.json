@@ -1,0 +1,44 @@
+{
+  "id": "042-compiler-macros",
+  "title": "Compiler Macros: A Light Touch",
+  "track": "macros",
+  "order": 42,
+  "estimatedMinutes": 9,
+  "prerequisites": ["041-once-only"],
+  "completionSymbols": ["define-compiler-macro", "defun", "*", "expt", "constantp"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Compiler Macros: A Light Touch\n\nA **compiler macro** is an *optional* shortcut the compiler may apply to calls of a regular function. The function still exists and can be used through `funcall`, `apply`, or `#'`. The compiler macro just lets the compiler rewrite a *direct* call into something faster when the arguments fit a special pattern.\n\n```lisp\n(defun cube (x) (* x x x))\n\n(define-compiler-macro cube (&whole form x)\n  (if (constantp x)\n      `(* ,x ,x ,x)        ; constant fold-friendly\n      form))               ; otherwise leave the call alone\n```\n\nThe second argument here uses `&whole`, which captures the original form so we can return it unchanged when our optimisation doesn't apply. Returning the original form is the polite way to decline.\n\nCommon uses:\n\n* Inline a hot path when arguments are constants.\n* Specialise a generic call when the argument types are known.\n* Issue a warning at compile time for misuse.\n\nWhen NOT to use:\n\n* As a substitute for `defmacro`. A compiler macro can be skipped (e.g. via `(funcall #'cube ...)`), so the **function** must always be the source of truth.\n* For semantics. Only for performance/diagnostics."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun cube (x) (* x x x)) (cube 4))",
+      "expected": "64",
+      "explain": "The plain function works as expected."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun cube (x) (* x x x)) (define-compiler-macro cube (&whole form x) (if (constantp x) `(* ,x ,x ,x) form)) (cube 5))",
+      "expected": "125",
+      "explain": "The compiler macro may rewrite (cube 5) to (* 5 5 5). Either way the answer is 125."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun cube (x) (* x x x)) (define-compiler-macro cube (&whole form x) (if (constantp x) `(* ,x ,x ,x) form)) (funcall #'cube 6))",
+      "expected": "216",
+      "explain": "Going through FUNCALL bypasses any compiler macro — the function is still the authoritative definition."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define DOUBLE-IT as a regular function that returns 2*X. Then add a compiler macro that, when X is a numeric constant, expands to (the constant doubled) directly. The function must still return the right answer when called normally.",
+      "starter": "(defun double-it (x)\n  )\n\n(define-compiler-macro double-it (&whole form x)\n  )",
+      "hint": "Function: (* 2 x). Compiler macro: (if (and (constantp x) (numberp x)) (* 2 x) form). The expansion is just a number — no quoting needed because numbers are self-evaluating.",
+      "tests": [
+        { "call": "(double-it 21)", "equals": "42" },
+        { "call": "(funcall #'double-it 10)", "equals": "20" },
+        { "call": "(let ((n 5)) (double-it n))", "equals": "10" }
+      ]
+    }
+  ]
+}

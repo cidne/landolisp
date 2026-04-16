@@ -1,0 +1,39 @@
+{
+  "id": "052-multiple-dispatch",
+  "title": "Multiple Dispatch",
+  "track": "clos",
+  "order": 52,
+  "estimatedMinutes": 11,
+  "prerequisites": ["051-call-next-method"],
+  "completionSymbols": ["defgeneric", "defmethod", "defclass", "make-instance", "list"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Multiple Dispatch\n\nIn most OO languages, `obj.method(arg)` dispatches on the type of `obj` only — the receiver. CLOS dispatches on the types of **as many arguments as you specialise**. This is **multiple dispatch**.\n\n```lisp\n(defmethod collide ((a asteroid) (b ship))    :ship-vs-asteroid)\n(defmethod collide ((a ship) (b asteroid))    :ship-vs-asteroid)\n(defmethod collide ((a asteroid) (b asteroid)) :rocks)\n(defmethod collide ((a ship) (b ship))         :crash)\n```\n\nThe applicable method is chosen by combining the specificity of each specialised parameter, with **earlier parameters dominating ties**. So when both args have applicable methods, the one whose *first* specialiser is more specific wins; if those tie, the *second* parameter is the tiebreaker; and so on.\n\nThis lets you naturally express operations like geometric intersection, type promotion, and event handling without the visitor-pattern song and dance you'd write in a single-dispatch language."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass a () ()) (defclass b () ()) (defgeneric meet (x y)) (defmethod meet ((x a) (y a)) :a-a) (defmethod meet ((x a) (y b)) :a-b) (defmethod meet ((x b) (y a)) :b-a) (defmethod meet ((x b) (y b)) :b-b) (list (meet (make-instance 'a) (make-instance 'b)) (meet (make-instance 'b) (make-instance 'a))))",
+      "expected": "(:A-B :B-A)",
+      "explain": "Argument order matters: (meet a b) and (meet b a) pick different methods."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defgeneric combine (x y)) (defmethod combine ((x integer) (y integer)) :int+int) (defmethod combine ((x integer) (y string)) :int+str) (defmethod combine ((x string) (y string)) :str+str) (list (combine 1 2) (combine 3 \"x\") (combine \"a\" \"b\")))",
+      "expected": "(:INT+INT :INT+STR :STR+STR)",
+      "explain": "Methods can specialise on built-in classes too; CLOS picks the right one based on both arguments."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define classes ROCK, PAPER, SCISSORS. Define generic function BEATS that returns :LEFT if the first arg beats the second, :RIGHT if the second beats the first, and :TIE if they're the same kind. (Rock>Scissors, Scissors>Paper, Paper>Rock.)",
+      "starter": "(defclass rock () ())\n(defclass paper () ())\n(defclass scissors () ())\n\n(defgeneric beats (a b))\n",
+      "hint": "Write nine methods: same-class -> :tie; otherwise figure each pair (e.g. (defmethod beats ((a rock) (b scissors)) :left)).",
+      "tests": [
+        { "call": "(beats (make-instance 'rock) (make-instance 'scissors))", "equals": ":LEFT" },
+        { "call": "(beats (make-instance 'scissors) (make-instance 'rock))", "equals": ":RIGHT" },
+        { "call": "(beats (make-instance 'paper) (make-instance 'paper))", "equals": ":TIE" },
+        { "call": "(beats (make-instance 'scissors) (make-instance 'paper))", "equals": ":LEFT" }
+      ]
+    }
+  ]
+}

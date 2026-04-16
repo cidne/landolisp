@@ -1,0 +1,71 @@
+{
+  "id": "023-hash-tables",
+  "title": "Hash Tables",
+  "track": "data",
+  "order": 23,
+  "estimatedMinutes": 12,
+  "prerequisites": ["022-vectors-and-arrays"],
+  "completionSymbols": ["make-hash-table", "gethash", "remhash", "clrhash", "hash-table-count", "hash-table-p", "maphash", "loop"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Hash Tables\n\nHash tables are Lisp's general-purpose key/value map.\n\n```lisp\n(defparameter *h* (make-hash-table))\n(setf (gethash 'name *h*) \"Ada\")\n(gethash 'name *h*)   ; => \"Ada\", T\n```\n\n`make-hash-table` accepts `:test` to choose key comparison: `eql` (default), `eq`, `equal`, `equalp`. Use `:test 'equal` for string or list keys.\n\n* `(gethash key ht &optional default)` — returns **two values**: the stored value (or default if missing) and a `T`/`NIL` present-p flag.\n* `(setf (gethash key ht) v)` — insert or update.\n* `(remhash key ht)` — delete; returns `T` iff a key was removed.\n* `(hash-table-count ht)` — number of entries.\n* `(maphash fn ht)` — iterate: `fn` is called with `(key value)`.\n* `clrhash` — empty the table."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((h (make-hash-table))) (setf (gethash 'x h) 10) (gethash 'x h))",
+      "expected": "10",
+      "explain": "Basic set/get."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((h (make-hash-table))) (gethash 'missing h))",
+      "expected": "NIL",
+      "explain": "Absent keys return the default (NIL unless you passed another)."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((h (make-hash-table))) (gethash 'missing h :nope))",
+      "expected": ":NOPE",
+      "explain": "Custom default."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((h (make-hash-table :test 'equal))) (setf (gethash \"foo\" h) 1) (gethash \"foo\" h))",
+      "expected": "1",
+      "explain": "Use :test 'equal for string keys — EQL would fail because distinct string reads are not EQL."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((h (make-hash-table))) (setf (gethash 'a h) 1) (setf (gethash 'b h) 2) (hash-table-count h))",
+      "expected": "2",
+      "explain": "Number of entries."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((h (make-hash-table))) (setf (gethash 'a h) 1) (remhash 'a h))",
+      "expected": "T",
+      "explain": "REMHASH returns T iff a key was removed."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-WORDS that, given a list of symbols, returns a hash table mapping each symbol to how many times it appeared. Use :test 'eql.",
+      "starter": "(defun count-words (words)\n  )",
+      "hint": "(let ((h (make-hash-table))) (dolist (w words h) (incf (gethash w h 0)))).",
+      "tests": [
+        { "call": "(gethash 'a (count-words '(a b a c a b)))", "equals": "3" },
+        { "call": "(gethash 'c (count-words '(a b a c a b)))", "equals": "1" },
+        { "call": "(gethash 'z (count-words '(a b a c a b)))", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define HT-KEYS that returns a list of the keys in a hash table, in arbitrary order sorted ascending.",
+      "starter": "(defun ht-keys (ht)\n  )",
+      "hint": "Collect with MAPHASH or LOOP, then SORT.",
+      "tests": [
+        { "call": "(let ((h (make-hash-table))) (setf (gethash 3 h) 'x) (setf (gethash 1 h) 'y) (setf (gethash 2 h) 'z) (ht-keys h))", "equals": "(1 2 3)" }
+      ]
+    }
+  ]
+}

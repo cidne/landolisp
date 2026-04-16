@@ -1,0 +1,61 @@
+{
+  "id": "032-do",
+  "title": "DO and DO* Iteration",
+  "track": "controlflow",
+  "order": 32,
+  "estimatedMinutes": 11,
+  "prerequisites": ["031-progn-prog1-prog2"],
+  "completionSymbols": ["do", "do*", "let", "1+", "1-", "<", ">", "incf", "list"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DO and DO* Iteration\n\n`do` is a general iteration macro:\n\n```lisp\n(do ((var1 init1 step1)\n     (var2 init2 step2)\n     ...)\n    (end-test result-form...)\n  body...)\n```\n\nMechanics:\n\n1. Bind each `var` to its `init` (in **parallel**, like `let`).\n2. Evaluate `end-test`. If true, evaluate the result forms and return the last; otherwise:\n3. Evaluate the body for side effects.\n4. Step each variable in **parallel**: every `step` is computed first, then all are assigned.\n5. Loop back to step 2.\n\n`do*` is the same shape but everything is **sequential**: bindings work like `let*`, and steps are assigned in order. Use `do*` when later steps need the freshly-updated values of earlier ones.\n\nIf a variable has no `step`, it isn't updated each iteration (but is still rebound each call). If you omit a result form, the loop returns `NIL`."
+    },
+    {
+      "kind": "example",
+      "code": "(do ((i 0 (1+ i)) (acc 0 (+ acc i))) ((= i 5) acc))",
+      "expected": "10",
+      "explain": "i runs 0..4, acc accumulates 0+1+2+3+4 = 10. The result form ACC is returned when the test fires at i=5."
+    },
+    {
+      "kind": "example",
+      "code": "(do ((xs '(a b c) (cdr xs)) (out nil (cons (car xs) out))) ((null xs) out))",
+      "expected": "(C B A)",
+      "explain": "Walks the list; out collects elements in reverse order."
+    },
+    {
+      "kind": "example",
+      "code": "(do* ((i 0 (1+ i)) (j (* i 10) (* i 10))) ((= i 3) j))",
+      "expected": "20",
+      "explain": "DO* binds and steps sequentially: when i is 2, j becomes 2*10 = 20, then test fires at i=3."
+    },
+    {
+      "kind": "example",
+      "code": "(do ((i 0 (1+ i))) ((= i 3)) (princ i))",
+      "expected": "NIL",
+      "explain": "Side-effect loop with no result form — returns NIL. (012 was printed to stdout.)"
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-UP that returns a list (1 2 ... N) using DO. (Hint: walk i from 1 to N, consing onto an accumulator, then NREVERSE.)",
+      "starter": "(defun count-up (n)\n  )",
+      "hint": "(do ((i 1 (1+ i)) (acc nil (cons i acc))) ((> i n) (nreverse acc))).",
+      "tests": [
+        { "call": "(count-up 5)", "equals": "(1 2 3 4 5)" },
+        { "call": "(count-up 1)", "equals": "(1)" },
+        { "call": "(count-up 0)", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define POWER that returns BASE^EXP for non-negative integer EXP using DO. Do not call EXPT.",
+      "starter": "(defun power (base exp)\n  )",
+      "hint": "(do ((i 0 (1+ i)) (acc 1 (* acc base))) ((= i exp) acc)).",
+      "tests": [
+        { "call": "(power 2 0)", "equals": "1" },
+        { "call": "(power 2 10)", "equals": "1024" },
+        { "call": "(power 5 3)", "equals": "125" }
+      ]
+    }
+  ]
+}

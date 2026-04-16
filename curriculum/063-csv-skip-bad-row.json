@@ -1,0 +1,44 @@
+{
+  "id": "063-csv-skip-bad-row",
+  "title": "A Worked Example: CSV Parser with SKIP-BAD-ROW",
+  "track": "conditions",
+  "order": 63,
+  "estimatedMinutes": 15,
+  "prerequisites": ["062-continuable-error"],
+  "completionSymbols": ["define-condition", "restart-case", "handler-bind", "invoke-restart", "find-restart", "error", "parse-integer", "loop"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# A Worked Example: CSV Parser with SKIP-BAD-ROW\n\nTime to tie it all together. We'll write a tiny CSV-like parser that takes a list of row strings, splits each on commas, and parses each field as an integer. Malformed rows will signal a `bad-row` error, and we'll offer two restarts: `skip-row` (drop this row) and `use-row` (substitute a value).\n\nThe payoff: the *same* parser function supports strict mode, tolerant mode, and substitution mode — determined entirely by the handler the caller installs.\n\n```lisp\n(define-condition bad-row (error)\n  ((line :initarg :line :reader bad-row-line)\n   (cause :initarg :cause :reader bad-row-cause)))\n\n(defun parse-row (line)\n  (mapcar #'parse-integer\n          (loop for start = 0 then (1+ comma)\n                for comma = (position #\\, line :start start)\n                collect (subseq line start comma)\n                while comma)))\n\n(defun parse-rows (lines)\n  (loop for line in lines\n        for row = (restart-case\n                      (handler-case (parse-row line)\n                        (error (c)\n                          (error 'bad-row :line line :cause c)))\n                    (skip-row () nil)\n                    (use-row  (v) v))\n        when row collect row))\n```\n\nCalled with no handler, a bad row signals `bad-row` and the debugger appears. Called under a handler that invokes `skip-row`, bad rows are quietly dropped. Called under a handler that invokes `use-row` with `'(0 0 0)`, bad rows become zeros. The parser itself is unchanged across all three uses."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition bad-row (error) ((line :initarg :line :reader bad-row-line))) (defun parse-row (line) (mapcar #'parse-integer (loop for start = 0 then (1+ comma) for comma = (position #\\, line :start start) collect (subseq line start comma) while comma))) (parse-row \"1,2,3\"))",
+      "expected": "(1 2 3)",
+      "explain": "The splitter plus PARSE-INTEGER on each field. Uses LOOP's WHILE clause to stop when no more commas are found."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition bad-row (error) ((line :initarg :line :reader bad-row-line))) (defun parse-row (line) (mapcar #'parse-integer (loop for start = 0 then (1+ comma) for comma = (position #\\, line :start start) collect (subseq line start comma) while comma))) (defun parse-rows (lines) (loop for line in lines for row = (restart-case (handler-case (parse-row line) (error () (error 'bad-row :line line))) (skip-row () nil) (use-row (v) v)) when row collect row)) (handler-bind ((bad-row (lambda (c) (declare (ignore c)) (invoke-restart 'skip-row)))) (parse-rows '(\"1,2\" \"oops\" \"3,4\"))))",
+      "expected": "((1 2) (3 4))",
+      "explain": "The bad row 'oops' is dropped by the SKIP-ROW restart; the two good rows parse normally."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition bad-row (error) ((line :initarg :line :reader bad-row-line))) (defun parse-row (line) (mapcar #'parse-integer (loop for start = 0 then (1+ comma) for comma = (position #\\, line :start start) collect (subseq line start comma) while comma))) (defun parse-rows (lines) (loop for line in lines for row = (restart-case (handler-case (parse-row line) (error () (error 'bad-row :line line))) (skip-row () nil) (use-row (v) v)) when row collect row)) (handler-bind ((bad-row (lambda (c) (declare (ignore c)) (invoke-restart 'use-row '(0 0))))) (parse-rows '(\"1,2\" \"oops\" \"3,4\"))))",
+      "expected": "((1 2) (0 0) (3 4))",
+      "explain": "Same parser, different handler: the bad row is replaced by (0 0). The parser code didn't change."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Using the same framework, define COUNT-BAD (LINES) that returns the number of rows that WOULD have signaled BAD-ROW if they weren't skipped. Use HANDLER-BIND to count and invoke SKIP-ROW on each. Assume PARSE-ROW and PARSE-ROWS and BAD-ROW are already defined as in the examples above; you only write COUNT-BAD.",
+      "starter": "(define-condition bad-row (error)\n  ((line :initarg :line :reader bad-row-line)))\n\n(defun parse-row (line)\n  (mapcar #'parse-integer\n          (loop for start = 0 then (1+ comma)\n                for comma = (position #\\, line :start start)\n                collect (subseq line start comma)\n                while comma)))\n\n(defun parse-rows (lines)\n  (loop for line in lines\n        for row = (restart-case\n                      (handler-case (parse-row line)\n                        (error () (error 'bad-row :line line)))\n                    (skip-row () nil)\n                    (use-row  (v) v))\n        when row collect row))\n\n(defun count-bad (lines)\n  )",
+      "hint": "(let ((n 0)) (handler-bind ((bad-row (lambda (c) (declare (ignore c)) (incf n) (invoke-restart 'skip-row)))) (parse-rows lines)) n).",
+      "tests": [
+        { "call": "(count-bad '(\"1,2\" \"3,4\"))", "equals": "0" },
+        { "call": "(count-bad '(\"1\" \"x\" \"y\" \"2\"))", "equals": "2" },
+        { "call": "(count-bad '(\"oops\" \"nope\" \"bad\"))", "equals": "3" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "011-let-and-let-star",
+  "title": "Local Bindings: LET and LET*",
+  "track": "functions",
+  "order": 11,
+  "estimatedMinutes": 10,
+  "prerequisites": ["009-defun"],
+  "completionSymbols": ["let", "let*", "setf", "setq", "progn", "multiple-value-bind", "destructuring-bind"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Local Bindings: LET and LET*\n\n`let` introduces local variables, visible only inside its body.\n\n```lisp\n(let ((x 1)\n      (y 2))\n  (+ x y))   ; => 3\n```\n\nAll of `let`'s initializer forms are evaluated in the **outer** environment, then the bindings are established *simultaneously*. That means inside a single `let`, one binding cannot refer to another.\n\n`let*` is the sequential cousin: each binding sees the ones above it.\n\n```lisp\n(let* ((x 2)\n       (y (* x 3)))\n  y)         ; => 6  — x is visible when evaluating (* x 3)\n```\n\nBoth return the value of their last body form. A binding with no init form defaults to `nil`: `(let (x) x)` returns `NIL`."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((x 10) (y 20)) (+ x y))",
+      "expected": "30",
+      "explain": "Local X and Y are only bound inside the body."
+    },
+    {
+      "kind": "example",
+      "code": "(let* ((x 2) (y (* x x))) (+ x y))",
+      "expected": "6",
+      "explain": "LET* lets Y see X. 2 + 4 = 6."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((x 1)) (let ((x 2)) x))",
+      "expected": "2",
+      "explain": "Inner LET shadows outer X."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((x 1)) (let ((x 2)) x) x)",
+      "expected": "1",
+      "explain": "Outside the inner LET, X is 1 again."
+    },
+    {
+      "kind": "example",
+      "code": "(let (a b c) (list a b c))",
+      "expected": "(NIL NIL NIL)",
+      "explain": "Without init forms, bindings default to NIL."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define APPROX-CIRCLE-AREA that returns p * r * r using a LET to bind P to 355/113 (a rational approximation of pi) and compute the area exactly as a ratio.",
+      "starter": "(defun approx-circle-area (r)\n  )",
+      "hint": "(let ((p 355/113)) (* p r r)).",
+      "tests": [
+        { "call": "(approx-circle-area 1)", "equals": "355/113" },
+        { "call": "(approx-circle-area 2)", "equals": "1420/113" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define POLY3 that computes a*x*x*x + b*x*x + c*x + d. Use LET* to bind x2 = x*x and x3 = x2*x so the final expression is tidy.",
+      "starter": "(defun poly3 (a b c d x)\n  )",
+      "tests": [
+        { "call": "(poly3 1 0 0 0 3)", "equals": "27" },
+        { "call": "(poly3 1 1 1 1 2)", "equals": "15" },
+        { "call": "(poly3 0 0 0 7 99)", "equals": "7" }
+      ]
+    }
+  ]
+}

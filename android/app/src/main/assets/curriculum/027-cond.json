@@ -1,0 +1,70 @@
+{
+  "id": "027-cond",
+  "title": "Multi-way Branching: COND",
+  "track": "controlflow",
+  "order": 27,
+  "estimatedMinutes": 10,
+  "prerequisites": ["026-if"],
+  "completionSymbols": ["cond", "t", "<", ">", "=", "zerop", "plusp", "minusp", "otherwise"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Multi-way Branching: COND\n\nA chain of `if`s gets ugly fast. `cond` is the multi-way conditional:\n\n```lisp\n(cond\n  (test1  body1...)\n  (test2  body2...)\n  ...\n  (t      default-body...))\n```\n\nClauses are checked top to bottom. The first clause whose test is true has its body evaluated, and the *last form* of that body is returned. If no test matches, `cond` returns `NIL`.\n\nIdioms:\n\n* The catch-all `(t ...)` clause is the conventional 'else'. Some authors write `(otherwise ...)`, which works because `otherwise` is just a symbol that's not `NIL` — but `t` is the canonical spelling.\n* A clause with **only a test** (no body) returns the value of the test itself. Useful for combining tests with values: `(cond ((member x '(1 2 3))) (t :nope))`.\n* Each body can have multiple forms; only the last one's value is returned, but the earlier ones run for their side effects."
+    },
+    {
+      "kind": "example",
+      "code": "(cond ((> 1 2) 'a) ((> 3 2) 'b) (t 'c))",
+      "expected": "B",
+      "explain": "First true clause wins."
+    },
+    {
+      "kind": "example",
+      "code": "(defun sign (n) (cond ((plusp n) :positive) ((minusp n) :negative) (t :zero)))",
+      "expected": "SIGN",
+      "explain": "DEFUN returns the function's name. We'll call it next."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun sign (n) (cond ((plusp n) :positive) ((minusp n) :negative) (t :zero))) (list (sign 7) (sign -3) (sign 0)))",
+      "expected": "(:POSITIVE :NEGATIVE :ZERO)",
+      "explain": "Three branches, three results."
+    },
+    {
+      "kind": "example",
+      "code": "(cond ((= 1 2) 'never) ((= 2 2)))",
+      "expected": "T",
+      "explain": "A clause with just a test returns the test's value: (= 2 2) is T."
+    },
+    {
+      "kind": "example",
+      "code": "(cond ((= 1 2) 'no))",
+      "expected": "NIL",
+      "explain": "No clause matches and there's no T branch, so COND returns NIL."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define LETTER-GRADE that maps integer scores 0..100 to a letter: 90+ -> :A, 80+ -> :B, 70+ -> :C, 60+ -> :D, else :F.",
+      "starter": "(defun letter-grade (score)\n  )",
+      "tests": [
+        { "call": "(letter-grade 95)", "equals": ":A" },
+        { "call": "(letter-grade 82)", "equals": ":B" },
+        { "call": "(letter-grade 71)", "equals": ":C" },
+        { "call": "(letter-grade 60)", "equals": ":D" },
+        { "call": "(letter-grade 41)", "equals": ":F" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define DESCRIBE-NUMBER that returns :ZERO for 0, :NEGATIVE for negatives, :SMALL for 1..9, :MEDIUM for 10..99, :LARGE otherwise.",
+      "starter": "(defun describe-number (n)\n  )",
+      "hint": "Stack COND clauses from most specific to most general.",
+      "tests": [
+        { "call": "(describe-number 0)", "equals": ":ZERO" },
+        { "call": "(describe-number -5)", "equals": ":NEGATIVE" },
+        { "call": "(describe-number 7)", "equals": ":SMALL" },
+        { "call": "(describe-number 50)", "equals": ":MEDIUM" },
+        { "call": "(describe-number 1000)", "equals": ":LARGE" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "031-progn-prog1-prog2",
+  "title": "Sequencing: PROGN, PROG1, PROG2",
+  "track": "controlflow",
+  "order": 31,
+  "estimatedMinutes": 6,
+  "prerequisites": ["030-and-or"],
+  "completionSymbols": ["progn", "prog1", "prog2", "let", "setf", "defparameter", "incf"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Sequencing: PROGN, PROG1, PROG2\n\nSometimes you need to run several forms in order and return one of their values. Three flavours:\n\n* `(progn a b c ...)` — evaluate all, return the **last**.\n* `(prog1 a b c ...)` — evaluate all, return the **first**. Useful for \"do this, then some cleanup, and give me back the original result\".\n* `(prog2 a b c ...)` — evaluate all, return the **second**. Mostly seen in old code.\n\nYou already use `progn` implicitly — it's the body of `defun`, `let`, `when`, `lambda`, and many others. You reach for it explicitly in places that expect exactly one form, like the branches of `if`."
+    },
+    {
+      "kind": "example",
+      "code": "(progn 1 2 3)",
+      "expected": "3",
+      "explain": "Sequence of three forms; the last wins."
+    },
+    {
+      "kind": "example",
+      "code": "(prog1 1 2 3)",
+      "expected": "1",
+      "explain": "PROG1 returns the FIRST form's value; later ones run for side effects."
+    },
+    {
+      "kind": "example",
+      "code": "(prog2 1 2 3)",
+      "expected": "2",
+      "explain": "PROG2 returns the SECOND form's value."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((x 10)) (prog1 x (setf x 999)) x)",
+      "expected": "999",
+      "explain": "We peeked at X (got 10, discarded), then set it to 999. LET body's last form returns 999."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((x 10)) (list (prog1 x (setf x 999)) x))",
+      "expected": "(10 999)",
+      "explain": "Classic PROG1 idiom: return the OLD value of X, then update it."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define POP-FIRST that, given a list-valued variable *STACK*, returns its first element and then removes it (by setting *STACK* to its CDR). Use PROG1 so you can return the old head AFTER the mutation.",
+      "starter": "(defparameter *stack* nil)\n\n(defun push-stack (x) (push x *stack*))\n(defun pop-first ()\n  )",
+      "hint": "(prog1 (first *stack*) (setf *stack* (rest *stack*))).",
+      "tests": [
+        { "call": "(progn (setf *stack* '(a b c)) (pop-first))", "equals": "A" },
+        { "call": "(progn (setf *stack* '(a b c)) (pop-first) *stack*)", "equals": "(B C)" },
+        { "call": "(progn (setf *stack* '(only)) (pop-first) *stack*)", "equals": "NIL" }
+      ]
+    }
+  ]
+}

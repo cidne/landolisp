@@ -1,0 +1,44 @@
+{
+  "id": "066-in-package",
+  "title": "IN-PACKAGE: Switching Mid-File",
+  "track": "packages",
+  "order": 66,
+  "estimatedMinutes": 8,
+  "prerequisites": ["065-defpackage"],
+  "completionSymbols": ["in-package", "*package*", "find-package", "package-name", "defpackage", "common-lisp-user"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# IN-PACKAGE: Switching Mid-File\n\nThe **current package** is held in the special variable `*package*`. The reader uses it to resolve unqualified symbol names: when you type `foo`, the reader looks up `\"FOO\"` in `*package*`, interning if necessary.\n\n`(in-package #:my-app)` mutates `*package*` to point at `MY-APP`. Conventionally every Lisp source file looks like:\n\n```lisp\n(defpackage #:my-app\n  (:use #:cl)\n  (:export #:start))\n\n(in-package #:my-app)\n\n(defun start () ...)\n```\n\nThe `defpackage` runs in whatever package the loader started in (usually `cl-user`); `in-package` then switches so that everything below it — including new `defun`s — is interned in `MY-APP`.\n\nAt the REPL, `(in-package :foo)` lets you experiment from inside a particular package: now unqualified names refer to `FOO`'s symbols, and tab-completion / symbol probing work against `FOO`. To get back, `(in-package :cl-user)`."
+    },
+    {
+      "kind": "example",
+      "code": "(package-name *package*)",
+      "expected": "\"COMMON-LISP-USER\"",
+      "explain": "At the REPL, *PACKAGE* is normally CL-USER."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:tmp (:use #:cl)) (let ((*package* (find-package \"TMP\"))) (package-name *package*)))",
+      "expected": "\"TMP\"",
+      "explain": "Binding *PACKAGE* with LET swaps it locally — the same effect IN-PACKAGE has globally. Note this works because *PACKAGE* is a special variable."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:tmp2 (:use #:cl)) (let ((*package* (find-package \"TMP2\"))) (read-from-string \"foo\")) (package-name *package*))",
+      "expected": "\"COMMON-LISP-USER\"",
+      "explain": "After the LET, *PACKAGE* is restored. The READ-FROM-STRING inside saw TMP2."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define CURRENT-PKG-NAME () returning the name of *PACKAGE* as a string. Then define WITH-PKG-NAME (PKGNAME) that creates a package with that name (using CL), executes (current-pkg-name) inside it via LET on *PACKAGE*, and returns the result. Both arguments are strings.",
+      "starter": "(defun current-pkg-name ()\n  )\n\n(defun with-pkg-name (pkgname)\n  )",
+      "hint": "(defun current-pkg-name () (package-name *package*)) and (defun with-pkg-name (pkgname) (unless (find-package pkgname) (make-package pkgname :use '(:cl))) (let ((*package* (find-package pkgname))) (current-pkg-name))).",
+      "tests": [
+        { "call": "(current-pkg-name)", "equals": "\"COMMON-LISP-USER\"" },
+        { "call": "(with-pkg-name \"PKG-A\")", "equals": "\"PKG-A\"" },
+        { "call": "(with-pkg-name \"PKG-B\")", "equals": "\"PKG-B\"" }
+      ]
+    }
+  ]
+}

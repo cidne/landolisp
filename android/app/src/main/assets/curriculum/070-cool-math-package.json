@@ -1,0 +1,44 @@
+{
+  "id": "070-cool-math-package",
+  "title": "Worked Example: A COOL-MATH Package",
+  "track": "packages",
+  "order": 70,
+  "estimatedMinutes": 12,
+  "prerequisites": ["069-package-gotchas"],
+  "completionSymbols": ["defpackage", "in-package", ":use", ":export", "use-package", "import", "find-symbol", "package-name"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Worked Example: A COOL-MATH Package\n\nLet's build a small package that exports two functions, then \"import\" it from another package.\n\n```lisp\n;;; cool-math.lisp\n(defpackage #:cool-math\n  (:use #:cl)\n  (:export #:square #:cube))\n\n(in-package #:cool-math)\n\n(defun square (x) (* x x))\n(defun cube   (x) (* x x x))\n```\n\nNow from a separate file or REPL:\n\n```lisp\n(defpackage #:my-app\n  (:use #:cl)\n  (:import-from #:cool-math #:square))\n\n(in-package #:my-app)\n\n(square 5)               ; => 25, used unqualified because we IMPORT-FROM'd it\n(cool-math:cube 5)       ; => 125, used qualified because we did NOT import it\n```\n\nThree ways to reach the exports:\n\n1. `cool-math:square` — fully qualified, anywhere.\n2. `(:import-from #:cool-math #:square)` — bring just `square` into your package; use unqualified.\n3. `(:use #:cool-math)` — bring **every** export into your package. Convenient, but increases collision risk; many shops prefer `:import-from`.\n\nGuarantees the exporter signs up for: every symbol in the `:export` list is interned in the package and made external. Anything else is internal — accessible only via `cool-math::name` (double colon)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:cool-math (:use #:cl) (:export #:square #:cube)) (in-package #:cool-math) (defun square (x) (* x x)) (defun cube (x) (* x x x)) (in-package #:cl-user) (cool-math:square 6))",
+      "expected": "36",
+      "explain": "Define the package + functions, then call SQUARE qualified from CL-USER."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:cool-math (:use #:cl) (:export #:square #:cube)) (in-package #:cool-math) (defun square (x) (* x x)) (defun cube (x) (* x x x)) (in-package #:cl-user) (cool-math:cube 4))",
+      "expected": "64",
+      "explain": "CUBE is also exported. 4^3 = 64."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:cool-math (:use #:cl) (:export #:square)) (in-package #:cool-math) (defun secret () 42) (in-package #:cl-user) (cool-math::secret))",
+      "expected": "42",
+      "explain": "SECRET is internal. The double colon (::) lets us call it anyway — useful for debugging, smelly in production code."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a package COOL-MATH2 that uses CL and exports HALF and DOUBLE. Define HALF (X) returning X / 2 (use /, not floor) and DOUBLE (X) returning 2 * X. Both go in the COOL-MATH2 package. Tests will call them as COOL-MATH2:HALF and COOL-MATH2:DOUBLE.",
+      "starter": "(defpackage #:cool-math2\n  (:use #:cl)\n  (:export #:half #:double))\n\n(in-package #:cool-math2)\n\n(defun half (x)\n  )\n\n(defun double (x)\n  )\n\n(in-package #:cl-user)",
+      "hint": "(defun half (x) (/ x 2)) inside the COOL-MATH2 package; (defun double (x) (* 2 x)) likewise.",
+      "tests": [
+        { "call": "(cool-math2:half 10)", "equals": "5" },
+        { "call": "(cool-math2:half 7)", "equals": "7/2" },
+        { "call": "(cool-math2:double 21)", "equals": "42" }
+      ]
+    }
+  ]
+}

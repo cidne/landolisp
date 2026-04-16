@@ -1,0 +1,51 @@
+{
+  "id": "067-symbol-naming",
+  "title": "Qualified Names: PKG:SYM and PKG::SYM",
+  "track": "packages",
+  "order": 67,
+  "estimatedMinutes": 8,
+  "prerequisites": ["066-in-package"],
+  "completionSymbols": ["find-symbol", "intern", "symbol-package", "package-name", "export", "import", "*package*"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Qualified Names: PKG:SYM and PKG::SYM\n\nFrom outside a package, you refer to its symbols using a qualified name. There are two forms:\n\n* `package:symbol` — the symbol must be **exported** from `package`. If it isn't, the reader signals an error. This is the public API form.\n* `package::symbol` — double colon means \"give me this symbol whether it's exported or not\". This is the **internals** form. Use it sparingly: a package's internals are not its API and may change without warning.\n\nFor keywords there's the special syntax `:symbol`, which is shorthand for `keyword:symbol`.\n\nA few practical notes:\n\n* `cl:car` and `car` (in a package that uses `:cl`) refer to the same symbol — the package prefix only matters when the reader needs disambiguation or when the symbol isn't visible.\n* You can write a qualified name from one package to refer to a symbol with the same name in *another* package. They are distinct symbols even though their names are equal.\n* `(find-symbol \"FOO\" :my-pkg)` is the runtime way to look up a symbol by string name in a package without interning."
+    },
+    {
+      "kind": "example",
+      "code": "(eq 'car 'cl:car)",
+      "expected": "T",
+      "explain": "CAR (inherited from :CL) and CL:CAR are the same symbol object."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:p1 (:use #:cl) (:export #:hello)) (intern \"HELLO\" \"P1\") (multiple-value-bind (sym status) (find-symbol \"HELLO\" \"P1\") (declare (ignore sym)) status))",
+      "expected": ":EXTERNAL",
+      "explain": "FIND-SYMBOL's second value tells you the symbol's status: :EXTERNAL (exported), :INTERNAL, or :INHERITED."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:p2 (:use #:cl)) (intern \"SECRET\" \"P2\") (multiple-value-bind (sym status) (find-symbol \"SECRET\" \"P2\") (declare (ignore sym)) status))",
+      "expected": ":INTERNAL",
+      "explain": "INTERN created the symbol but didn't export it. Status is :INTERNAL — accessible only via P2::SECRET, never P2:SECRET."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:p3 (:use #:cl)) (find-symbol \"NOPE\" \"P3\"))",
+      "expected": "NIL",
+      "explain": "FIND-SYMBOL returns NIL (and a NIL second value) when the symbol isn't there. Compare INTERN, which would create it."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define VISIBILITY (NAME PKG-NAME) that returns the keyword status of NAME (a string) in PKG-NAME (a string): one of :EXTERNAL, :INTERNAL, :INHERITED, or :ABSENT (when the symbol isn't accessible at all).",
+      "starter": "(defun visibility (name pkg-name)\n  )",
+      "hint": "(multiple-value-bind (sym status) (find-symbol name pkg-name) (declare (ignore sym)) (or status :absent)).",
+      "tests": [
+        { "call": "(progn (defpackage #:vis (:use #:cl) (:export #:open-thing)) (intern \"OPEN-THING\" \"VIS\") (visibility \"OPEN-THING\" \"VIS\"))", "equals": ":EXTERNAL" },
+        { "call": "(progn (defpackage #:vis2 (:use #:cl)) (intern \"PRIVATE\" \"VIS2\") (visibility \"PRIVATE\" \"VIS2\"))", "equals": ":INTERNAL" },
+        { "call": "(progn (defpackage #:vis3 (:use #:cl)) (visibility \"CAR\" \"VIS3\"))", "equals": ":INHERITED" },
+        { "call": "(progn (defpackage #:vis4 (:use #:cl)) (visibility \"NOSUCHTHING\" \"VIS4\"))", "equals": ":ABSENT" }
+      ]
+    }
+  ]
+}

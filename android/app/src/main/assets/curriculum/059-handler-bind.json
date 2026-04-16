@@ -1,0 +1,43 @@
+{
+  "id": "059-handler-bind",
+  "title": "HANDLER-BIND: The Real CL Way",
+  "track": "conditions",
+  "order": 59,
+  "estimatedMinutes": 12,
+  "prerequisites": ["058-handler-case"],
+  "completionSymbols": ["handler-bind", "invoke-restart", "continue", "muffle-warning", "signal", "warn", "handler-case"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# HANDLER-BIND: The Real CL Way\n\n`handler-case` is the unwinding form. `handler-bind` is the **non-unwinding** form — and it is what makes Common Lisp's condition system actually different from Java's.\n\n```lisp\n(handler-bind ((CONDITION-TYPE HANDLER-FN) ...)\n  BODY)\n```\n\nEach handler is a function of one argument (the condition). When a matching condition is signaled anywhere inside `BODY`, the handler runs **with the stack still intact** between the signal site and here. The handler has three options:\n\n1. **Decline** — just return normally. The condition system tries the next handler further up the stack. (`signal` therefore just returns NIL if every handler declines.)\n2. **Transfer control** — do a non-local exit (`return-from`, `throw`, or `invoke-restart` to a restart bound *outside* the handler). Now the stack unwinds as needed.\n3. **Invoke a restart** — call `invoke-restart` on a named restart established by the signaling code. Control resumes at the restart site; the signaling call often returns normally as if nothing happened.\n\nThe practical consequence: you can write code that signals a purely informational condition, and a caller can install a `handler-bind` that logs it and declines — the original code continues unaware. You cannot do this with `handler-case`, because `handler-case` always unwinds.\n\nA common reflex: `(handler-bind ((warning #'muffle-warning)) ...)` suppresses warnings without unwinding, by invoking the `muffle-warning` restart the warning system always establishes."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((log '())) (handler-bind ((warning (lambda (c) (push (princ-to-string c) log) (muffle-warning)))) (warn \"one\") (warn \"two\")) (length log))",
+      "expected": "2",
+      "explain": "The handler logs and muffles each warning; control returns to the signaler, so WARN returns and the next WARN runs. Two warnings handled."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-bind ((error (lambda (c) (declare (ignore c)) (return-from nowhere :escaped)))) (block nowhere (error \"bad\") :never))",
+      "expected": ":ESCAPED",
+      "explain": "The handler does a non-local exit with RETURN-FROM. This unwinds just like HANDLER-CASE would."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((count 0)) (handler-bind ((warning (lambda (c) (declare (ignore c)) (incf count) (muffle-warning)))) (dotimes (i 3) (warn \"hey\"))) count)",
+      "expected": "3",
+      "explain": "DOTIMES runs to completion because each WARN is muffled. Loop-inside-handler-bind is the idiom for collecting signals."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-WARNINGS that takes a thunk, runs it under a HANDLER-BIND that counts WARNINGs (muffling each), and returns the count.",
+      "starter": "(defun count-warnings (thunk)\n  )",
+      "hint": "(let ((n 0)) (handler-bind ((warning (lambda (c) (declare (ignore c)) (incf n) (muffle-warning)))) (funcall thunk)) n).",
+      "tests": [
+        { "call": "(count-warnings (lambda () nil))", "equals": "0" },
+        { "call": "(count-warnings (lambda () (warn \"a\") (warn \"b\") (warn \"c\")))", "equals": "3" }
+      ]
+    }
+  ]
+}

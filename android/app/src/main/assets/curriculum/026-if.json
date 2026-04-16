@@ -1,0 +1,66 @@
+{
+  "id": "026-if",
+  "title": "Conditional: IF",
+  "track": "controlflow",
+  "order": 26,
+  "estimatedMinutes": 8,
+  "prerequisites": ["025-sequences-api"],
+  "completionSymbols": ["if", "not", "null", "zerop", "evenp", "oddp", "plusp", "minusp", "t", "nil"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Conditional: IF\n\n`if` is the simplest branching form in Common Lisp:\n\n```lisp\n(if test then-form else-form)\n```\n\nIt evaluates `test`. If the result is anything but `NIL`, it evaluates `then-form`; otherwise it evaluates `else-form`. The else branch is *optional* — if omitted and the test is false, `if` returns `NIL`.\n\nKey rules of thumb:\n\n* Only `NIL` is false. Everything else — `0`, `\"\"`, `'()` (which is the same object as `NIL`!), `#\\Space` — is true.\n* `if` is an **expression**: it returns a value. There is no `if` statement in Lisp.\n* The branches are single forms. If you need multiple forms, wrap them in `progn`, or use a different special form (we'll meet `when`/`unless` next)."
+    },
+    {
+      "kind": "example",
+      "code": "(if (> 3 2) 'yes 'no)",
+      "expected": "YES",
+      "explain": "3 > 2 is true, so the THEN branch runs."
+    },
+    {
+      "kind": "example",
+      "code": "(if (zerop 5) 'zero 'not-zero)",
+      "expected": "NOT-ZERO",
+      "explain": "ZEROP returns NIL for 5, so the ELSE branch runs."
+    },
+    {
+      "kind": "example",
+      "code": "(if nil 'a)",
+      "expected": "NIL",
+      "explain": "No else clause; a false test returns NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(+ 10 (if (evenp 4) 1 100))",
+      "expected": "11",
+      "explain": "IF is an expression. It returns 1 here, then 10 + 1 = 11."
+    },
+    {
+      "kind": "example",
+      "code": "(if '() 'truthy 'falsy)",
+      "expected": "FALSY",
+      "explain": "The empty list IS NIL, so it's the only false value."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define ABS-VAL that returns the absolute value of N using IF (do not call ABS).",
+      "starter": "(defun abs-val (n)\n  )",
+      "tests": [
+        { "call": "(abs-val 5)", "equals": "5" },
+        { "call": "(abs-val -7)", "equals": "7" },
+        { "call": "(abs-val 0)", "equals": "0" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SAFE-DIV that returns A/B if B is non-zero, otherwise the symbol :ERROR.",
+      "starter": "(defun safe-div (a b)\n  )",
+      "hint": "(if (zerop b) :error (/ a b)).",
+      "tests": [
+        { "call": "(safe-div 10 2)", "equals": "5" },
+        { "call": "(safe-div 1 0)", "equals": ":ERROR" },
+        { "call": "(safe-div 7 2)", "equals": "7/2" }
+      ]
+    }
+  ]
+}

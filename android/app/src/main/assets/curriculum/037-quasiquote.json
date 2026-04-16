@@ -1,0 +1,67 @@
+{
+  "id": "037-quasiquote",
+  "title": "Quasiquote, Unquote, Splicing",
+  "track": "macros",
+  "order": 37,
+  "estimatedMinutes": 10,
+  "prerequisites": ["036-reader-vs-evaluator"],
+  "completionSymbols": ["quote", "list", "append", "let", "+", "*"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Quasiquote, Unquote, Splicing\n\nWriting `(list 'if test (list 'progn ...))` to build code is painful. The reader gives us three pieces of syntactic sugar to make it ergonomic:\n\n* `` ` `` (backtick) — **quasiquote**. Like `'`, it returns a literal structure...\n* `,` (comma) — ...except inside the quasiquote, an unquoted expression is **evaluated** and its value spliced in.\n* `,@` (comma-at) — like `,`, but the value (which must be a list) is **spliced** into the surrounding list, not nested as a single element.\n\n```lisp\n(let ((x 10) (xs '(a b c)))\n  `(start ,x middle ,@xs end))\n;; => (START 10 MIDDLE A B C END)\n```\n\nWithout `,@`, `,xs` would have produced `(START 10 MIDDLE (A B C) END)`.\n\nQuasiquote is just sugar — the reader translates a backtick form into calls to `list`, `cons`, `append`, and `quote`. Different implementations may print it differently when you re-read it, so don't rely on a specific expansion shape.\n\nThis is the syntax we'll use to assemble macro expansions."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((x 10)) `(a b ,x c))",
+      "expected": "(A B 10 C)",
+      "explain": "Comma evaluates X (10) and inserts its value as one element."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((xs '(1 2 3))) `(a ,xs b))",
+      "expected": "(A (1 2 3) B)",
+      "explain": "Plain comma inserts the LIST as a single element."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((xs '(1 2 3))) `(a ,@xs b))",
+      "expected": "(A 1 2 3 B)",
+      "explain": "Comma-at SPLICES the list into the surrounding form."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((op '+) (a 3) (b 4)) `(,op ,a ,b))",
+      "expected": "(+ 3 4)",
+      "explain": "Building a function-call form. We could EVAL this to get 7."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((a 1) (b 2)) `(sum ,a ,b is ,(+ a b)))",
+      "expected": "(SUM 1 2 IS 3)",
+      "explain": "Comma can wrap any expression, including nested calls."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define WRAP-PAIR that takes a value X and returns the data form (WRAPPED X). Use quasiquote.",
+      "starter": "(defun wrap-pair (x)\n  )",
+      "hint": "`(wrapped ,x).",
+      "tests": [
+        { "call": "(wrap-pair 42)", "equals": "(WRAPPED 42)" },
+        { "call": "(wrap-pair 'foo)", "equals": "(WRAPPED FOO)" },
+        { "call": "(wrap-pair '(a b))", "equals": "(WRAPPED (A B))" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAKE-CALL-FORM that takes an OP symbol and a list of ARGS and returns the call form (OP a1 a2 ...). Use quasiquote with comma-at.",
+      "starter": "(defun make-call-form (op args)\n  )",
+      "hint": "`(,op ,@args).",
+      "tests": [
+        { "call": "(make-call-form '+ '(1 2 3))", "equals": "(+ 1 2 3)" },
+        { "call": "(make-call-form 'list '(a b))", "equals": "(LIST A B)" },
+        { "call": "(make-call-form 'foo nil)", "equals": "(FOO)" }
+      ]
+    }
+  ]
+}

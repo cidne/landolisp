@@ -1,0 +1,56 @@
+{
+  "id": "081-trivia",
+  "title": "Trivia: Pattern Matching",
+  "track": "libraries",
+  "order": 81,
+  "estimatedMinutes": 12,
+  "prerequisites": ["080-cl-ppcre"],
+  "completionSymbols": ["ql:quickload", "trivia:match", "trivia:ematch", "trivia:cons", "trivia:list", "trivia:guard", "trivia:when", "trivia:defpattern"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Trivia: Pattern Matching\n\nCommon Lisp has `case` and `cond`, but no native pattern matching against shapes (lists, structs, alists). Trivia fills that hole.\n\n```lisp\n(trivia:match VALUE\n  (PATTERN-1 BODY-1)\n  (PATTERN-2 BODY-2)\n  ...)\n```\n\nIt evaluates `VALUE`, then tries each pattern in order; the first match runs its body with the pattern's variables bound, and the body's value is the result. No match => `match` returns `NIL` (`ematch` errors).\n\nPattern vocabulary:\n\n* literals: `1`, `\"foo\"`, `:bar`, `nil` — match by equality.\n* variables: any other symbol — matches anything and binds.\n* `_` — matches anything, binds nothing.\n* `(list a b c)` — matches a 3-element list, binds.\n* `(cons head tail)` — matches a non-empty list.\n* `(guard PATTERN PREDICATE)` — pattern that also requires `PREDICATE` of the bindings to be true.\n* `(or P1 P2 ...)`, `(and P1 P2 ...)` — combinators.\n\nTrivia is the workhorse for parsing tagged data, walking ASTs, and writing tiny interpreters."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :trivia)",
+      "expected": "(:TRIVIA)",
+      "explain": "Load Trivia."
+    },
+    {
+      "kind": "example",
+      "code": "(trivia:match '(1 2 3) ((list a b c) (+ a b c)))",
+      "expected": "6",
+      "explain": "Match a 3-element list, bind A, B, C, sum them."
+    },
+    {
+      "kind": "example",
+      "code": "(trivia:match '(:point 3 4) ((list :point x y) (+ x y)) (_ :unknown))",
+      "expected": "7",
+      "explain": "Tagged tuple. The literal :POINT must match; X, Y are bound."
+    },
+    {
+      "kind": "example",
+      "code": "(trivia:match 7 ((trivia:guard n (evenp n)) :even) ((trivia:guard n (oddp n)) :odd))",
+      "expected": ":ODD",
+      "explain": "GUARD attaches a predicate. 7 isn't even but is odd."
+    },
+    {
+      "kind": "example",
+      "code": "(trivia:match '(a b c) ((cons head tail) (list head tail)))",
+      "expected": "(A (B C))",
+      "explain": "CONS pattern destructures into head and tail."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define INTERP that takes a 'tagged op': (:add A B), (:mul A B), or (:neg A). Returns the result. Use TRIVIA:MATCH.",
+      "starter": "(defun interp (expr)\n  )",
+      "hint": "(trivia:match expr ((list :add a b) (+ a b)) ((list :mul a b) (* a b)) ((list :neg a) (- a))).",
+      "tests": [
+        { "call": "(interp '(:add 2 3))", "equals": "5" },
+        { "call": "(interp '(:mul 4 5))", "equals": "20" },
+        { "call": "(interp '(:neg 7))", "equals": "-7" }
+      ]
+    }
+  ]
+}

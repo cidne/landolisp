@@ -1,0 +1,62 @@
+{
+  "id": "079-serapeum",
+  "title": "Serapeum: Alexandria's Bigger Sibling",
+  "track": "libraries",
+  "order": 79,
+  "estimatedMinutes": 12,
+  "prerequisites": ["078-alexandria"],
+  "completionSymbols": ["ql:quickload", "serapeum:dict", "serapeum:assort", "serapeum:partition", "serapeum:take", "serapeum:drop", "serapeum:string-join", "serapeum:fmt"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Serapeum: Alexandria's Bigger Sibling\n\nSerapeum picks up where Alexandria deliberately stops. It includes more opinionated, more powerful, and occasionally more controversial utilities. Where Alexandria adds **conservative** missing pieces, Serapeum is happy to add full **idioms**.\n\nA few highlights:\n\n* `dict` — build a hash table inline: `(serapeum:dict :a 1 :b 2)`.\n* `assort` — group a list by key.\n* `partition` — split a list by predicate; returns two values.\n* `take`, `drop`, `take-while`, `drop-while` — sequence prefixes/suffixes.\n* `string-join` — `(string-join '(\"a\" \"b\" \"c\") \"-\")` => `\"a-b-c\"`.\n* `~>`, `~>>` — Clojure-style threading macros.\n* `fmt` — formatted-string interpolation.\n\nSerapeum **does** depend on Alexandria, so loading Serapeum loads both."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :serapeum)",
+      "expected": "(:SERAPEUM)",
+      "explain": "Loads Serapeum and its dependencies (Alexandria included)."
+    },
+    {
+      "kind": "example",
+      "code": "(gethash :a (serapeum:dict :a 1 :b 2))",
+      "expected": "1",
+      "explain": "DICT builds a hash table inline. We pull :A back out."
+    },
+    {
+      "kind": "example",
+      "code": "(serapeum:take 3 '(a b c d e))",
+      "expected": "(A B C)",
+      "explain": "TAKE returns the first N elements as a fresh list."
+    },
+    {
+      "kind": "example",
+      "code": "(serapeum:drop 2 '(a b c d e))",
+      "expected": "(C D E)",
+      "explain": "DROP returns everything past the first N."
+    },
+    {
+      "kind": "example",
+      "code": "(serapeum:string-join '(\"foo\" \"bar\" \"baz\") \"/\")",
+      "expected": "\"foo/bar/baz\"",
+      "explain": "STRING-JOIN concatenates with a separator. The CL way without it is FORMAT NIL \"~{~a~^/~}\" — a fair bit noisier."
+    },
+    {
+      "kind": "example",
+      "code": "(multiple-value-bind (yes no) (serapeum:partition #'evenp '(1 2 3 4 5 6)) (list yes no))",
+      "expected": "((2 4 6) (1 3 5))",
+      "explain": "PARTITION returns two values: matches and non-matches."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define HEAD-AND-TAIL (LIST N) returning the cons of (the first N elements) and (the rest). Use SERAPEUM:TAKE and SERAPEUM:DROP.",
+      "starter": "(defun head-and-tail (list n)\n  )",
+      "hint": "(cons (serapeum:take n list) (serapeum:drop n list)).",
+      "tests": [
+        { "call": "(head-and-tail '(a b c d e) 2)", "equals": "((A B) C D E)" },
+        { "call": "(head-and-tail '(1 2 3) 0)", "equals": "(NIL 1 2 3)" },
+        { "call": "(head-and-tail '() 3)", "equals": "(NIL)" }
+      ]
+    }
+  ]
+}

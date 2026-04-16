@@ -1,0 +1,60 @@
+{
+  "id": "038-defmacro",
+  "title": "DEFMACRO Basics",
+  "track": "macros",
+  "order": 38,
+  "estimatedMinutes": 12,
+  "prerequisites": ["037-quasiquote"],
+  "completionSymbols": ["defmacro", "let", "if", "when", "unless", "progn", "list", "quote"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DEFMACRO Basics\n\nA macro is a function whose **input** and **output** are both source code (Lisp data). It runs at *compile* (or *macro-expansion*) time, before the program ever runs.\n\n```lisp\n(defmacro my-when (test &body body)\n  `(if ,test\n       (progn ,@body)\n       nil))\n```\n\nThe parameter list works like `defun`'s, with one famous extra: `&body` is a synonym for `&rest`, used by convention to signal \"the trailing forms are a body of code\". Both bind a list of all remaining arguments.\n\nWhen the compiler sees `(my-when (> x 0) (print x) x)`, it calls `my-when` with arguments `(> x 0)` and `((print x) x)`, gets back the expansion `(if (> x 0) (progn (print x) x) nil)`, and compiles **that**.\n\nKey points:\n\n* Macro arguments are **not evaluated** before the macro runs. They arrive as raw forms.\n* The expansion is what runs. So a macro that ignores its second argument means that argument's code is never executed.\n* Always document whether each argument is evaluated, and how many times — multiple-evaluation is the most common macro bug, addressed in upcoming lessons.\n\nFor simple wrappers, prefer a function. Use a macro when you need to control *evaluation order*, *binding*, or *syntax*."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro my-when (test &body body) `(if ,test (progn ,@body) nil)) (my-when (> 3 2) 'yes))",
+      "expected": "YES",
+      "explain": "Our MY-WHEN expands to (IF (> 3 2) (PROGN 'YES) NIL); test is true so YES."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro my-when (test &body body) `(if ,test (progn ,@body) nil)) (my-when nil (error \"never\") 42))",
+      "expected": "NIL",
+      "explain": "When the test is false, the body forms are never evaluated — that's why this is a macro, not a function."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro square (x) `(* ,x ,x)) (square 5))",
+      "expected": "25",
+      "explain": "A trivial expansion: (SQUARE 5) becomes (* 5 5)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro swap-args (op a b) `(,op ,b ,a)) (swap-args - 1 10))",
+      "expected": "9",
+      "explain": "Reorders syntactic arguments: (- 10 1) = 9. A function couldn't do this — - would be evaluated as a function value, not a symbol slotted into a form."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a macro UNLESS-IT that behaves like UNLESS: (unless-it test body...) returns NIL if TEST is true, and otherwise runs BODY (returning the last form's value).",
+      "starter": "(defmacro unless-it (test &body body)\n  )",
+      "hint": "`(if ,test nil (progn ,@body)).",
+      "tests": [
+        { "call": "(unless-it nil 'ran)", "equals": "RAN" },
+        { "call": "(unless-it t 'ran)", "equals": "NIL" },
+        { "call": "(unless-it (> 3 5) 1 2 3)", "equals": "3" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a macro DOUBLE-FORM that takes a single form X and expands to (+ X X). Verify by calling (double-form 7).",
+      "starter": "(defmacro double-form (x)\n  )",
+      "hint": "`(+ ,x ,x).",
+      "tests": [
+        { "call": "(double-form 7)", "equals": "14" },
+        { "call": "(double-form (* 2 3))", "equals": "12" }
+      ]
+    }
+  ]
+}
