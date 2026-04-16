@@ -1,0 +1,76 @@
+{
+  "id": "002-lists-and-evaluation",
+  "title": "Lists and the Evaluator",
+  "track": "fundamentals",
+  "order": 2,
+  "estimatedMinutes": 10,
+  "prerequisites": ["001-atoms"],
+  "completionSymbols": ["list", "car", "cdr", "cons", "first", "rest", "length", "append", "null"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Lists and the Evaluator\n\nA **list** is built from **cons cells**. A cons cell has two fields, `car` (head) and `cdr` (tail). A proper list is a chain of cons cells whose final `cdr` is `nil`.\n\nYou build lists with:\n\n* `(list a b c ...)` — make a list of the (evaluated) arguments.\n* `(cons head tail)` — prepend `head` to the list `tail`.\n\nYou take lists apart with:\n\n* `(car xs)` — first element.\n* `(cdr xs)` — everything except the first (a list).\n* `(first xs)`, `(rest xs)` — modern aliases for `car`/`cdr`.\n\nWhen the evaluator sees a list `(f x y z)` it treats `f` as a function and evaluates `x`, `y`, `z` as arguments. To stop evaluation and use a list as plain data, you must **quote** it (next lesson)."
+    },
+    {
+      "kind": "example",
+      "code": "(list 1 2 3)",
+      "expected": "(1 2 3)",
+      "explain": "LIST returns a new list of its arguments. Note: arguments are evaluated first."
+    },
+    {
+      "kind": "example",
+      "code": "(list (+ 1 2) (* 3 4))",
+      "expected": "(3 12)",
+      "explain": "Each argument is evaluated, then collected into a list."
+    },
+    {
+      "kind": "example",
+      "code": "(cons 1 (list 2 3))",
+      "expected": "(1 2 3)",
+      "explain": "CONS prepends 1 onto the list (2 3)."
+    },
+    {
+      "kind": "example",
+      "code": "(car (list 10 20 30))",
+      "expected": "10",
+      "explain": "The first element."
+    },
+    {
+      "kind": "example",
+      "code": "(cdr (list 10 20 30))",
+      "expected": "(20 30)",
+      "explain": "Everything after the first."
+    },
+    {
+      "kind": "example",
+      "code": "(length (list 'a 'b 'c 'd))",
+      "expected": "4",
+      "explain": "LENGTH counts elements of a proper list."
+    },
+    {
+      "kind": "example",
+      "code": "(append (list 1 2) (list 3 4))",
+      "expected": "(1 2 3 4)",
+      "explain": "APPEND concatenates lists."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SECOND-OF that returns the second element of a list using CAR and CDR.",
+      "starter": "(defun second-of (xs)\n  )",
+      "hint": "(cdr xs) drops the first element; then take the CAR.",
+      "tests": [
+        { "call": "(second-of (list 10 20 30))", "equals": "20" },
+        { "call": "(second-of (list 'a 'b 'c))", "equals": "B" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MY-PAIR that takes two values and returns a two-element list of them.",
+      "starter": "(defun my-pair (x y)\n  )",
+      "tests": [
+        { "call": "(my-pair 1 2)", "equals": "(1 2)" },
+        { "call": "(my-pair 'foo 'bar)", "equals": "(FOO BAR)" }
+      ]
+    }
+  ]
+}

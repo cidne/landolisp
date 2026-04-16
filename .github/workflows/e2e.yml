@@ -1,0 +1,45 @@
+name: e2e
+
+# End-to-end smoke for the sandbox stack: builds the server image, runs the
+# real container, exercises the public API via curl. Triggered on PRs and
+# manually so we get a green/red signal before merge without spamming
+# in-flight branches.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ensure docker is available
+        run: docker version
+
+      - name: run e2e harness
+        run: bash scripts/e2e.sh
+
+      - name: collect server logs (always)
+        if: always()
+        run: |
+          if [ -f /tmp/landolisp-e2e.log ]; then
+            echo "--- server logs ---"
+            tail -200 /tmp/landolisp-e2e.log || true
+          fi
+
+      - name: upload server logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: landolisp-e2e-logs
+          path: |
+            /tmp/landolisp-e2e.log
+            /tmp/landolisp-e2e-build.log
+            /tmp/landolisp-e2e-health.json
+            /tmp/landolisp-e2e-ql.json
+          if-no-files-found: ignore
