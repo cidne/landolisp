@@ -1,0 +1,3 @@
+# Lesson JSON files are populated at build time by `scripts/sync-curriculum.sh`
+# (wired in via the `syncCurriculum` Gradle task in app/build.gradle.kts).
+# Source of truth lives in /curriculum at the repo root.

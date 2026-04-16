@@ -1,0 +1,69 @@
+{
+  "id": "001-atoms",
+  "title": "Atoms and S-expressions",
+  "track": "fundamentals",
+  "order": 1,
+  "estimatedMinutes": 8,
+  "prerequisites": [],
+  "completionSymbols": ["+", "-", "*", "/", "list", "car", "cdr", "cons", "quote"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Atoms and S-expressions\n\nEverything in Common Lisp is built out of two kinds of things:\n\n* **atoms** — numbers (`42`, `1/2`, `3.14`), symbols (`foo`, `+`, `pi`), characters (`#\\a`), strings (`\"hi\"`), `nil`, `t`.\n* **lists** — parenthesized sequences of atoms or other lists, e.g. `(+ 1 2)` or `(a (b c) d)`.\n\nTogether they form **S-expressions** (\"symbolic expressions\"). Lisp source code *is* data: the program `(+ 1 2)` is a three-element list whose first element is the symbol `+`.\n\nWhen you type an S-expression at the REPL, Lisp **evaluates** it:\n\n* numbers evaluate to themselves;\n* a list `(f a b ...)` is treated as a **function call**: evaluate the arguments, then apply `f` to them.\n\nThat's the entire syntax of the language."
+    },
+    {
+      "kind": "example",
+      "code": "(+ 1 2)",
+      "expected": "3",
+      "explain": "A function call: the symbol + is the function, 1 and 2 are arguments. The result is 3."
+    },
+    {
+      "kind": "example",
+      "code": "(* 6 7)",
+      "expected": "42",
+      "explain": "Same idea — multiplication."
+    },
+    {
+      "kind": "example",
+      "code": "(+ 1 2 3 4 5)",
+      "expected": "15",
+      "explain": "Most arithmetic functions take any number of arguments."
+    },
+    {
+      "kind": "example",
+      "code": "(- 10 3 2)",
+      "expected": "5",
+      "explain": "Subtraction is left-associative: 10 - 3 - 2 = 5."
+    },
+    {
+      "kind": "example",
+      "code": "(/ 22 7)",
+      "expected": "22/7",
+      "explain": "Dividing two integers gives an exact ratio, not a float. Lisp keeps full precision."
+    },
+    {
+      "kind": "example",
+      "code": "(+ (* 2 3) (* 4 5))",
+      "expected": "26",
+      "explain": "Calls nest. Inner forms are evaluated first: 6 and 20, then summed."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Write an expression that computes the sum 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 by passing all ten numbers to +.",
+      "starter": "(+ )",
+      "tests": [
+        { "call": "(+ 1 2 3 4 5 6 7 8 9 10)", "equals": "55" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a function called THREE-PRODUCT that returns the product of its three arguments. (We will study DEFUN soon; for now, just fill in the body.)",
+      "starter": "(defun three-product (a b c)\n  )",
+      "tests": [
+        { "call": "(three-product 2 3 4)", "equals": "24" },
+        { "call": "(three-product 1 1 1)", "equals": "1" },
+        { "call": "(three-product 5 0 99)", "equals": "0" }
+      ]
+    }
+  ]
+}

@@ -10,6 +10,9 @@ data class SessionResponse(
     val expiresAt: String,
 )
 
+/** Spec-facing alias used in the Architecture doc and prompt. */
+typealias SessionCreated = SessionResponse
+
 // ---------- Eval ----------
 
 @Serializable

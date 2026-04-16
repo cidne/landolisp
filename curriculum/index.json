@@ -1,0 +1,250 @@
+[
+  {
+    "id": "001-atoms",
+    "title": "Atoms and S-expressions",
+    "track": "fundamentals",
+    "order": 1,
+    "estimatedMinutes": 8,
+    "prerequisites": []
+  },
+  {
+    "id": "002-lists-and-evaluation",
+    "title": "Lists and the Evaluator",
+    "track": "fundamentals",
+    "order": 2,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "001-atoms"
+    ]
+  },
+  {
+    "id": "003-quote",
+    "title": "Quote: Code as Data",
+    "track": "fundamentals",
+    "order": 3,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "002-lists-and-evaluation"
+    ]
+  },
+  {
+    "id": "004-symbols",
+    "title": "Symbols and Variables",
+    "track": "fundamentals",
+    "order": 4,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "003-quote"
+    ]
+  },
+  {
+    "id": "005-numbers-basics",
+    "title": "Numbers: The Basics",
+    "track": "fundamentals",
+    "order": 5,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "001-atoms"
+    ]
+  },
+  {
+    "id": "006-printing",
+    "title": "Printing and Output",
+    "track": "fundamentals",
+    "order": 6,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "005-numbers-basics"
+    ]
+  },
+  {
+    "id": "007-comments-and-booleans",
+    "title": "Comments, Booleans, and NIL",
+    "track": "fundamentals",
+    "order": 7,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "004-symbols"
+    ]
+  },
+  {
+    "id": "008-equality-predicates",
+    "title": "Equality: EQ, EQL, EQUAL, EQUALP",
+    "track": "fundamentals",
+    "order": 8,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "007-comments-and-booleans"
+    ]
+  },
+  {
+    "id": "009-defun",
+    "title": "Defining Functions with DEFUN",
+    "track": "functions",
+    "order": 9,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "008-equality-predicates"
+    ]
+  },
+  {
+    "id": "010-parameters",
+    "title": "Parameters: &optional, &rest, &key",
+    "track": "functions",
+    "order": 10,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "009-defun"
+    ]
+  },
+  {
+    "id": "011-let-and-let-star",
+    "title": "Local Bindings: LET and LET*",
+    "track": "functions",
+    "order": 11,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "009-defun"
+    ]
+  },
+  {
+    "id": "012-lambda",
+    "title": "Anonymous Functions: LAMBDA",
+    "track": "functions",
+    "order": 12,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "011-let-and-let-star"
+    ]
+  },
+  {
+    "id": "013-recursion",
+    "title": "Recursion",
+    "track": "functions",
+    "order": 13,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "012-lambda"
+    ]
+  },
+  {
+    "id": "014-higher-order",
+    "title": "Higher-Order Functions: MAPCAR, REDUCE, REMOVE-IF",
+    "track": "functions",
+    "order": 14,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "013-recursion"
+    ]
+  },
+  {
+    "id": "015-closures",
+    "title": "Closures",
+    "track": "functions",
+    "order": 15,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "014-higher-order"
+    ]
+  },
+  {
+    "id": "016-multiple-values",
+    "title": "Multiple Values",
+    "track": "functions",
+    "order": 16,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "015-closures"
+    ]
+  },
+  {
+    "id": "017-labels-and-flet",
+    "title": "Local Functions: FLET and LABELS",
+    "track": "functions",
+    "order": 17,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "016-multiple-values"
+    ]
+  },
+  {
+    "id": "018-numbers-deep",
+    "title": "Numbers in Depth: Ratios, Bignums, Floats, Complex",
+    "track": "data",
+    "order": 18,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "005-numbers-basics"
+    ]
+  },
+  {
+    "id": "019-strings",
+    "title": "Strings",
+    "track": "data",
+    "order": 19,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "018-numbers-deep"
+    ]
+  },
+  {
+    "id": "020-characters",
+    "title": "Characters",
+    "track": "data",
+    "order": 20,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "019-strings"
+    ]
+  },
+  {
+    "id": "021-conses-and-lists",
+    "title": "Conses, Proper Lists, and Dotted Pairs",
+    "track": "data",
+    "order": 21,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "020-characters"
+    ]
+  },
+  {
+    "id": "022-vectors-and-arrays",
+    "title": "Vectors and Arrays",
+    "track": "data",
+    "order": 22,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "021-conses-and-lists"
+    ]
+  },
+  {
+    "id": "023-hash-tables",
+    "title": "Hash Tables",
+    "track": "data",
+    "order": 23,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "022-vectors-and-arrays"
+    ]
+  },
+  {
+    "id": "024-structs",
+    "title": "Structures with DEFSTRUCT",
+    "track": "data",
+    "order": 24,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "023-hash-tables"
+    ]
+  },
+  {
+    "id": "025-sequences-api",
+    "title": "The Sequence API",
+    "track": "data",
+    "order": 25,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "024-structs"
+    ]
+  }
+]

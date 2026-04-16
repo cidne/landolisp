@@ -84,30 +84,29 @@ android {
 
 // Sync curriculum JSON from /curriculum into assets before each build.
 //
-// Owned by Agent B3 / scripts/. If the script doesn't yet exist (early bring-up)
-// the task is a no-op so `assembleDebug` still succeeds on a fresh checkout.
+// Prefers `scripts/sync-curriculum.sh` (owned by Agent B3) when present so that
+// validation / index generation stays in one place. Falls back to a plain copy
+// so a fresh checkout can still `assembleDebug` before the helper script lands.
+val curriculumSourceDir = rootProject.projectDir.parentFile.resolve("curriculum")
+val curriculumTargetDir = layout.projectDirectory.dir("src/main/assets/curriculum").asFile
+val syncCurriculumScript = rootProject.projectDir.parentFile.resolve("scripts/sync-curriculum.sh")
+
 val syncCurriculum = tasks.register("syncCurriculum") {
     group = "build"
     description = "Copies curriculum JSON files into the app's assets/curriculum directory."
-    val scriptFile = rootProject.projectDir.parentFile.resolve("scripts/sync-curriculum.sh")
-    val sourceDir = rootProject.projectDir.parentFile.resolve("curriculum")
-    val targetDir = layout.projectDirectory.dir("src/main/assets/curriculum").asFile
-    inputs.dir(sourceDir).optional()
-    outputs.dir(targetDir)
     doLast {
-        if (scriptFile.exists()) {
-            exec {
+        when {
+            syncCurriculumScript.exists() -> exec {
                 workingDir = rootProject.projectDir.parentFile
-                commandLine("bash", scriptFile.absolutePath)
+                commandLine("bash", syncCurriculumScript.absolutePath)
             }
-        } else if (sourceDir.exists()) {
-            // Fallback: copy *.json straight across so the app has something to load
-            // even before the helper script is committed.
-            targetDir.mkdirs()
-            sourceDir.listFiles { f -> f.isFile && f.name.endsWith(".json") }
-                ?.forEach { src -> src.copyTo(targetDir.resolve(src.name), overwrite = true) }
-        } else {
-            logger.info("syncCurriculum: no curriculum source dir at $sourceDir; skipping")
+            curriculumSourceDir.exists() -> {
+                curriculumTargetDir.mkdirs()
+                curriculumSourceDir.listFiles { f ->
+                    f.isFile && f.name.endsWith(".json") && f.name != "schema.json"
+                }?.forEach { src -> src.copyTo(curriculumTargetDir.resolve(src.name), overwrite = true) }
+            }
+            else -> logger.info("syncCurriculum: no curriculum source dir at $curriculumSourceDir; skipping")
         }
     }
 }

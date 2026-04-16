@@ -1,0 +1,63 @@
+{
+  "id": "004-symbols",
+  "title": "Symbols and Variables",
+  "track": "fundamentals",
+  "order": 4,
+  "estimatedMinutes": 10,
+  "prerequisites": ["003-quote"],
+  "completionSymbols": ["defparameter", "defvar", "defconstant", "setf", "symbol-name", "boundp", "*", "+"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Symbols and Variables\n\nA **symbol** is a named object. The reader interns symbols by name, so two occurrences of `foo` in the same package refer to the same object.\n\nA symbol can have several pieces of associated state. The two you'll meet first:\n\n* a **value** (its binding as a variable);\n* a **function** (its binding as a function — see lesson on `defun`).\n\nGlobal variables are introduced with:\n\n* `(defparameter *name* value)` — always (re)sets the value. Convention: surround with `*earmuffs*`.\n* `(defvar *name* value)` — sets the value only if unbound.\n* `(defconstant +name+ value)` — defines a constant.\n\nUse `setf` to assign to an existing place: `(setf *x* 10)`."
+    },
+    {
+      "kind": "example",
+      "code": "(defparameter *greeting* \"hello\")",
+      "expected": "*GREETING*",
+      "explain": "DEFPARAMETER returns the symbol it bound. The variable *GREETING* now holds the string \"hello\"."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defparameter *x* 10) *x*)",
+      "expected": "10",
+      "explain": "After defining *X*, evaluating *X* yields its value. PROGN runs forms in order and returns the last value."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defparameter *x* 10) (setf *x* 99) *x*)",
+      "expected": "99",
+      "explain": "SETF mutates the binding."
+    },
+    {
+      "kind": "example",
+      "code": "(symbol-name 'hello)",
+      "expected": "\"HELLO\"",
+      "explain": "Every symbol has a name (a string). The reader uppercased it."
+    },
+    {
+      "kind": "example",
+      "code": "(symbol-name '|MixedCase|)",
+      "expected": "\"MixedCase\"",
+      "explain": "Vertical bars preserve the literal characters of a symbol name."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a function NAME-OF that returns the symbol-name of its symbol argument as a string.",
+      "starter": "(defun name-of (sym)\n  )",
+      "tests": [
+        { "call": "(name-of 'foo)", "equals": "\"FOO\"" },
+        { "call": "(name-of 'bar-baz)", "equals": "\"BAR-BAZ\"" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define INC-COUNTER that, when called repeatedly, increments and returns the global counter *COUNT* (which you should also define starting at 0).",
+      "starter": "(defparameter *count* 0)\n(defun inc-counter ()\n  )",
+      "hint": "INCF is shorthand for (setf x (+ x 1)).",
+      "tests": [
+        { "call": "(progn (setf *count* 0) (inc-counter) (inc-counter) (inc-counter))", "equals": "3" }
+      ]
+    }
+  ]
+}

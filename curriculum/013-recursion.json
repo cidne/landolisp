@@ -1,0 +1,70 @@
+{
+  "id": "013-recursion",
+  "title": "Recursion",
+  "track": "functions",
+  "order": 13,
+  "estimatedMinutes": 12,
+  "prerequisites": ["012-lambda"],
+  "completionSymbols": ["defun", "if", "cond", "null", "car", "cdr", "cons", "1-", "+", "list"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Recursion\n\nRecursion is the idiomatic way to walk a list in Lisp. The shape almost always has a **base case** and a **recursive case**:\n\n```lisp\n(defun length-of (xs)\n  (if (null xs)\n      0\n      (1+ (length-of (cdr xs)))))\n```\n\n* Base case: empty list → 0.\n* Recursive case: 1 + length of the tail.\n\nA few canonical patterns:\n\n* **count / sum** — accumulate a number while recursing on `cdr`.\n* **map** — `cons` the transformed head onto the recursive call.\n* **filter** — conditionally cons.\n* **fold** — pass an accumulator argument (often via a helper).\n\nCommon Lisp does *not* guarantee tail-call optimisation, but SBCL performs it under most settings, so deep tail-recursion usually works fine in this course."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun len (xs) (if (null xs) 0 (1+ (len (cdr xs))))) (len '(a b c d e)))",
+      "expected": "5",
+      "explain": "Classic structural recursion on a list."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun fact (n) (if (zerop n) 1 (* n (fact (1- n))))) (fact 6))",
+      "expected": "720",
+      "explain": "Factorial. Base case at n=0."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun sum-list (xs) (if (null xs) 0 (+ (car xs) (sum-list (cdr xs))))) (sum-list '(1 2 3 4 5)))",
+      "expected": "15",
+      "explain": "Sum the elements of a list."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun double-each (xs) (if (null xs) nil (cons (* 2 (car xs)) (double-each (cdr xs))))) (double-each '(1 2 3)))",
+      "expected": "(2 4 6)",
+      "explain": "Map: cons the transformed head onto the recursive tail."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MY-LENGTH that returns the length of a list, recursively. Do not call LENGTH.",
+      "starter": "(defun my-length (xs)\n  )",
+      "tests": [
+        { "call": "(my-length nil)", "equals": "0" },
+        { "call": "(my-length '(a))", "equals": "1" },
+        { "call": "(my-length '(a b c d))", "equals": "4" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MY-REVERSE that reverses a list, recursively. Do not call REVERSE. Hint: append the recursed tail to a single-element list of the head.",
+      "starter": "(defun my-reverse (xs)\n  )",
+      "hint": "(append (my-reverse (cdr xs)) (list (car xs))).",
+      "tests": [
+        { "call": "(my-reverse nil)", "equals": "NIL" },
+        { "call": "(my-reverse '(1))", "equals": "(1)" },
+        { "call": "(my-reverse '(1 2 3 4))", "equals": "(4 3 2 1)" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define FIB that returns the Nth Fibonacci number where (fib 0) = 0 and (fib 1) = 1.",
+      "starter": "(defun fib (n)\n  )",
+      "tests": [
+        { "call": "(fib 0)", "equals": "0" },
+        { "call": "(fib 1)", "equals": "1" },
+        { "call": "(fib 10)", "equals": "55" }
+      ]
+    }
+  ]
+}

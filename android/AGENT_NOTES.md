@@ -41,7 +41,19 @@
 
 ### Asset sync + tests
 - `scripts/sync-curriculum.sh` — bash, idempotent, prunes stale, skips `schema.json`, reports counts. Executable.
+- `android/app/src/main/assets/curriculum/.gitkeep` — placeholder so the dir exists on a fresh checkout before the sync runs.
+- `android/app/src/main/assets/cl-symbols.json` — 173-entry CL standard symbol list for the editor's completer.
+- `android/app/src/main/java/com/landolisp/lisp/package-info.kt` — empty placeholder for the `lisp` package (B1 fills in Tokenizer / ParenMatcher / CompletionDb).
 - `app/src/test/java/com/landolisp/LessonModelTest.kt` — JUnit 4: deserializes a hand-crafted lesson + verifies forward-compat key skipping.
+- `app/src/test/java/com/landolisp/data/LessonSerializationTest.kt` — JUnit 4: full round-trip + per-section-kind assertions + minimal-document defaults.
+
+### Network / backup config
+- `android/app/src/main/res/xml/network_security_config.xml` — HTTPS-only baseline + cleartext exception for `10.0.2.2`/`localhost`.
+- `android/app/src/main/res/xml/backup_rules.xml`, `data_extraction_rules.xml` — Auto-Backup + Android-12 device-transfer rules; exclude session caches.
+- `android/app/src/debug/AndroidManifest.xml` — overlay that re-enables `usesCleartextTraffic` only for debug builds.
+
+### Gradle wrapper scripts
+- `android/gradlew`, `android/gradlew.bat` — standard Gradle 8.5 wrapper scripts (binary jar intentionally NOT committed; developers must run `gradle wrapper --gradle-version 8.5` once or rely on Android Studio to download it).
 
 ## TODOs left for other agents
 - `TODO(B1)` in `ui/editor/CodeEditor.kt` — replace the `BasicTextField` stub with the full editor (tokenizer, rainbow parens, auto-balance, completion). KDoc enumerates the contract.

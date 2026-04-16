@@ -1,0 +1,113 @@
+{
+  "id": "025-sequences-api",
+  "title": "The Sequence API",
+  "track": "data",
+  "order": 25,
+  "estimatedMinutes": 12,
+  "prerequisites": ["024-structs"],
+  "completionSymbols": ["length", "elt", "subseq", "reverse", "map", "reduce", "find", "position", "count", "remove", "concatenate", "every", "some", "sort"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# The Sequence API\n\nA **sequence** in Common Lisp is either a list or a vector (including strings). The sequence functions work on **either**.\n\nThe everyday sequence API:\n\n* `(length s)` — element count.\n* `(elt s i)` — element at index i (0-based). Works on both lists and vectors, but is O(n) on lists.\n* `(subseq s start &optional end)` — sub-sequence.\n* `(reverse s)` — fresh reversed copy.\n* `(map result-type fn s &rest more)` — like MAPCAR but the result type is your choice (`'list`, `'string`, `'vector`, `nil`).\n* `(reduce fn s &key initial-value from-end)` — fold.\n* `(find item s &key test)`, `(position item s &key test)`, `(count item s &key test)`.\n* `(remove item s &key test)` — fresh copy without matches.\n* `(every pred s)`, `(some pred s)`.\n* `(sort s pred)` — DESTRUCTIVE; pass a copy if you want to keep the original.\n\nUsing `:test #'equal` is common when items are strings or lists."
+    },
+    {
+      "kind": "example",
+      "code": "(length \"hello\")",
+      "expected": "5",
+      "explain": "LENGTH works uniformly on lists, vectors, and strings."
+    },
+    {
+      "kind": "example",
+      "code": "(elt '(a b c d) 2)",
+      "expected": "C",
+      "explain": "ELT is the generic indexed accessor."
+    },
+    {
+      "kind": "example",
+      "code": "(elt #(10 20 30) 1)",
+      "expected": "20",
+      "explain": "Same call shape works on a vector."
+    },
+    {
+      "kind": "example",
+      "code": "(reverse '(1 2 3))",
+      "expected": "(3 2 1)",
+      "explain": "Fresh reversed list."
+    },
+    {
+      "kind": "example",
+      "code": "(reverse \"hello\")",
+      "expected": "\"olleh\"",
+      "explain": "And on a string."
+    },
+    {
+      "kind": "example",
+      "code": "(map 'list #'1+ #(1 2 3))",
+      "expected": "(2 3 4)",
+      "explain": "MAP returns the requested type — here a list, from a vector input."
+    },
+    {
+      "kind": "example",
+      "code": "(map 'string #'char-upcase \"hello\")",
+      "expected": "\"HELLO\"",
+      "explain": "Build a string by mapping over a string."
+    },
+    {
+      "kind": "example",
+      "code": "(find 3 '(1 2 3 4))",
+      "expected": "3",
+      "explain": "FIND returns the matching element or NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(position #\\l \"hello\")",
+      "expected": "2",
+      "explain": "POSITION returns the index of the first match."
+    },
+    {
+      "kind": "example",
+      "code": "(count #\\l \"hello\")",
+      "expected": "2",
+      "explain": "How many matches."
+    },
+    {
+      "kind": "example",
+      "code": "(sort (copy-seq '(3 1 4 1 5 9 2 6)) #'<)",
+      "expected": "(1 1 2 3 4 5 6 9)",
+      "explain": "SORT is destructive; pass a COPY-SEQ if the original matters."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-CHAR that returns how many times character C occurs in string S.",
+      "starter": "(defun count-char (c s)\n  )",
+      "hint": "(count c s).",
+      "tests": [
+        { "call": "(count-char #\\l \"hello\")", "equals": "2" },
+        { "call": "(count-char #\\z \"hello\")", "equals": "0" },
+        { "call": "(count-char #\\a \"banana\")", "equals": "3" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SORTED-COPY that returns a sorted ascending copy of a sequence of numbers, without modifying the input.",
+      "starter": "(defun sorted-copy (xs)\n  )",
+      "hint": "(sort (copy-seq xs) #'<).",
+      "tests": [
+        { "call": "(sorted-copy '(3 1 4 1 5 9 2 6))", "equals": "(1 1 2 3 4 5 6 9)" },
+        { "call": "(sorted-copy #(3 1 2))", "equals": "#(1 2 3)" },
+        { "call": "(sorted-copy '())", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define REMOVE-NEGATIVES that returns a fresh sequence (same kind as input) with negative numbers removed.",
+      "starter": "(defun remove-negatives (xs)\n  )",
+      "hint": "(remove-if #'minusp xs).",
+      "tests": [
+        { "call": "(remove-negatives '(1 -2 3 -4 5))", "equals": "(1 3 5)" },
+        { "call": "(remove-negatives #(1 -2 3 -4 5))", "equals": "#(1 3 5)" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "012-lambda",
+  "title": "Anonymous Functions: LAMBDA",
+  "track": "functions",
+  "order": 12,
+  "estimatedMinutes": 8,
+  "prerequisites": ["011-let-and-let-star"],
+  "completionSymbols": ["lambda", "function", "funcall", "apply", "defun"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Anonymous Functions: LAMBDA\n\n`lambda` builds an unnamed function value. Its shape is exactly like a `defun` body, minus the name:\n\n```lisp\n(lambda (x y) (+ x y))\n```\n\nBecause Common Lisp is a *Lisp-2* (separate value and function namespaces), to **call** a function held in a variable you go through `funcall` or `apply`:\n\n```lisp\n(funcall (lambda (x) (* x x)) 7)   ; => 49\n```\n\nIn the operator position of a list, a `lambda` form may appear directly:\n\n```lisp\n((lambda (x) (* x x)) 7)            ; => 49\n```\n\n`#'(lambda ...)` and `(lambda ...)` are equivalent — both reduce to a function object."
+    },
+    {
+      "kind": "example",
+      "code": "(funcall (lambda (x) (* x x)) 6)",
+      "expected": "36",
+      "explain": "Build a squarer and immediately call it on 6."
+    },
+    {
+      "kind": "example",
+      "code": "((lambda (a b) (+ a b)) 10 20)",
+      "expected": "30",
+      "explain": "A lambda may sit directly in operator position."
+    },
+    {
+      "kind": "example",
+      "code": "(apply (lambda (&rest xs) (apply #'+ xs)) '(1 2 3 4))",
+      "expected": "10",
+      "explain": "APPLY spreads a list as the final args to a function."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((adder (lambda (x) (+ x 100)))) (funcall adder 5))",
+      "expected": "105",
+      "explain": "Functions are first-class values — store them in variables."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Without using DEFUN, evaluate a lambda that returns x cubed when called with 4. Provide just the call form.",
+      "starter": "((lambda (x) ) 4)",
+      "tests": [
+        { "call": "((lambda (x) (* x x x)) 4)", "equals": "64" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAKE-ADDER that returns a function which adds N to its argument.",
+      "starter": "(defun make-adder (n)\n  )",
+      "hint": "Return (lambda (x) (+ x n)).",
+      "tests": [
+        { "call": "(funcall (make-adder 3) 10)", "equals": "13" },
+        { "call": "(funcall (make-adder -5) 100)", "equals": "95" }
+      ]
+    }
+  ]
+}

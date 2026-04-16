@@ -4,7 +4,7 @@
 > Update this file at the end of every working session.
 
 **Branch:** `claude/android-lisp-learning-app-35r3M`
-**Last updated:** 2026-04-16
+**Last updated:** 2026-04-16 (Phase 1 complete)
 
 ---
 
@@ -34,12 +34,12 @@ See `ARCHITECTURE.md` for the binding spec.
 | M0 | Repo skeleton, architecture + status docs         | done          | main agent  |
 | M1 | Android app skeleton compiles in Android Studio   | scaffolded    | Agent A1    |
 | M2 | Sandbox API answers `/v1/health` via Docker        | scaffolded    | Agent A2    |
-| M3 | Foundational lessons (atoms → functions)          | scaffolded    | Agent A3    |
-| M4 | Code editor with highlight + parens + completion  | scaffolded    | Agent B1    |
-| M5 | Mid curriculum (macros, CLOS, conditions)         | scaffolded    | Agent B2    |
-| M6 | Advanced curriculum (ASDF, Quicklisp, libraries)  | scaffolded    | Agent B3    |
-| M7 | Server hardening (sandbox, sessions, limits)      | scaffolded    | Agent B4    |
-| M8 | Test scaffolds (JUnit + FiveAM + contract tests)  | scaffolded    | Agent B5    |
+| M3 | Foundational lessons (atoms → functions → data)   | scaffolded    | Agent A3    |
+| M4 | Code editor with highlight + parens + completion  | not started   | Agent B1    |
+| M5 | Mid curriculum (control flow, macros, CLOS)       | not started   | Agent B2    |
+| M6 | Advanced curriculum (ASDF, Quicklisp, libraries)  | not started   | Agent B3    |
+| M7 | Server hardening (sandbox, sessions, limits)      | not started   | Agent B4    |
+| M8 | Test scaffolds (JUnit + FiveAM + contract tests)  | not started   | Agent B5    |
 | M9 | End-to-end smoke: emulator → docker server → eval | not started   | -           |
 
 Status legend: `not started` · `scaffolded` (code present, untested in target env) · `working` (verified in env) · `done`.
@@ -48,25 +48,26 @@ Status legend: `not started` · `scaffolded` (code present, untested in target e
 
 ## Task board
 
-### In flight (Phase 1, parallel)
-- A1 — Android skeleton (`/android/`)
-- A2 — Sandbox server (`/server/`)
-- A3 — Foundational curriculum (`/curriculum/001-…025-*.json`)
+### In flight
+*(none — Phase 2 fan-out next)*
 
-### Done
+### Done (Phase 0 + Phase 1)
 - M0 Repo skeleton, ARCHITECTURE.md, API.md, CURRICULUM.md, PROJECT_STATUS.md.
-- Curriculum tooling: `scripts/build-curriculum-index.sh`, `scripts/validate-curriculum.sh`, `scripts/sync-curriculum.sh`.
-- CI scaffolding: `.github/workflows/ci.yml` (curriculum schema check + Android build + server docker smoke).
+- M1 Android skeleton (47 files): Gradle catalog, Material3 theme, NavHost, Lessons/Lesson/REPL screens, sealed `Section` data model, Retrofit sandbox client, hand-rolled Markdown renderer, `cl-symbols.json` (150+ entries), `CodeEditor` stub awaiting B1, JUnit serialization tests.
+- M2 Sandbox server: ASDF system + Hunchentoot acceptor + every `/v1/*` endpoint, in-process eval with `bordeaux-threads:with-timeout`, allow-listed Quicklisp loader, idle-session reaper, FiveAM tests, Dockerfile pre-quickloading deps.
+- M3 Foundational curriculum (25 lessons across `fundamentals` / `functions` / `data`), all validate against `schema.json`. `index.json` generated.
+- Curriculum tooling: `scripts/build-curriculum-index.sh`, `validate-curriculum.sh`, `sync-curriculum.sh`.
+- CI tightened: PR + workflow_dispatch only (no more push-to-claude/** noise), python jsonschema validation, auto-installs Android SDK + regenerates wrapper jar, server job gated on Dockerfile + 25 min timeout.
 
-### Up next (Phase 2, kicks off when Phase 1 lands)
+### Up next (Phase 2, parallel)
 - B1 — Compose code editor (highlight, paren matching, completion).
-- B2 — Mid curriculum: control flow, macros, CLOS.
-- B3 — Advanced curriculum: conditions, packages, ASDF, Quicklisp libraries.
+- B2 — Mid curriculum: control flow, macros, CLOS (orders 26–55).
+- B3 — Advanced curriculum: conditions, packages, ASDF, Quicklisp libraries (orders 56–90).
 - B4 — Server hardening: subprocess pool, firejail/seccomp, rlimits.
-- B5 — Tests: JUnit + FiveAM + REST contract tests.
+- B5 — Tests: expand JUnit + FiveAM + REST contract tests, plus end-to-end harness.
 
-### Phase 3
-- Main-thread integration pass: assemble `curriculum/index.json`, resolve cross-agent TODOs, sanity-check Kotlin/Lisp source, run validators.
+### Phase 3 (after Phase 2 lands)
+- Main-thread integration pass: regenerate `curriculum/index.json`, resolve cross-agent TODOs (`TODO(B1)`, `TODO(B4)`), sanity-check Kotlin/Lisp source, run validators.
 
 ---
 
@@ -94,3 +95,7 @@ The architecture, source, and tests are written so that the first build on a rea
 ## Change log
 
 - 2026-04-16 — M0 complete: foundation, architecture, status board.
+- 2026-04-16 — M1 complete: Android Compose skeleton (Agent A1).
+- 2026-04-16 — M2 complete: sandbox server scaffolded (Agent A2).
+- 2026-04-16 — M3 complete: 25 foundational lessons (Agent A3); `curriculum/index.json` assembled.
+- 2026-04-16 — CI scoped to PR-only to silence in-flight scaffolding noise.
