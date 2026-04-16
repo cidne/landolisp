@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://landolisp.dev/schemas/lesson.json",
+  "title": "Lesson",
+  "type": "object",
+  "required": ["id", "title", "track", "order", "sections"],
+  "additionalProperties": false,
+  "properties": {
+    "id":              { "type": "string", "pattern": "^[0-9]{3}-[a-z0-9-]+$" },
+    "title":           { "type": "string", "minLength": 1 },
+    "track":           { "enum": ["fundamentals","functions","data","controlflow","macros","clos","conditions","packages","system","libraries"] },
+    "order":           { "type": "integer", "minimum": 1 },
+    "estimatedMinutes":{ "type": "integer", "minimum": 1, "maximum": 60 },
+    "prerequisites":   { "type": "array", "items": { "type": "string" } },
+    "completionSymbols":{ "type": "array", "items": { "type": "string" } },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["kind", "markdown"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "const": "prose" },
+              "markdown": { "type": "string", "minLength": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["kind", "code"],
+            "additionalProperties": false,
+            "properties": {
+              "kind":    { "const": "example" },
+              "code":    { "type": "string", "minLength": 1 },
+              "expected":{ "type": "string" },
+              "explain": { "type": "string" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["kind", "prompt", "starter", "tests"],
+            "additionalProperties": false,
+            "properties": {
+              "kind":    { "const": "exercise" },
+              "prompt":  { "type": "string", "minLength": 1 },
+              "starter": { "type": "string" },
+              "hint":    { "type": "string" },
+              "tests": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["call", "equals"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "call":   { "type": "string" },
+                    "equals": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

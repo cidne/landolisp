@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches: [main, claude/**]
+  pull_request:
+
+jobs:
+  curriculum:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm i -g ajv-cli
+      - run: bash scripts/validate-curriculum.sh
+      - run: bash scripts/build-curriculum-index.sh
+      - name: ensure index.json is up to date
+        run: |
+          if ! git diff --quiet curriculum/index.json; then
+            echo "::error::curriculum/index.json is stale; run scripts/build-curriculum-index.sh"
+            git --no-pager diff curriculum/index.json
+            exit 1
+          fi
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: 'temurin', java-version: '21' }
+      - uses: gradle/actions/setup-gradle@v3
+      - run: bash scripts/sync-curriculum.sh
+      - working-directory: android
+        run: ./gradlew :app:assembleDebug --no-daemon
+      - working-directory: android
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker build
+        run: docker build -t landolisp-sandbox:ci server
+      - name: smoke test /v1/health
+        run: |
+          docker run -d --name sandbox -p 8080:8080 landolisp-sandbox:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/v1/health; then ok=1; break; fi
+            sleep 2
+          done
+          docker logs sandbox || true
+          [ "${ok:-}" = "1" ]
