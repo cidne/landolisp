@@ -25,15 +25,15 @@
     },
     {
       "kind": "example",
-      "code": "(alexandria:plist-hash-table '(:a 1 :b 2) :test 'eq)",
-      "expected": "",
-      "explain": "Returns a hash table; the printed form varies by implementation, so we just confirm it builds. The next example checks a key."
+      "code": "(gethash :a (alexandria:plist-hash-table '(:a 1 :b 2) :test 'eq))",
+      "expected": "1",
+      "explain": "PLIST-HASH-TABLE builds a hash table from a plist. We round-trip by looking :A back out."
     },
     {
       "kind": "example",
-      "code": "(gethash :a (alexandria:plist-hash-table '(:a 1 :b 2) :test 'eq))",
-      "expected": "1",
-      "explain": "Round-trip: build the table from a plist, look up :A. Returns 1."
+      "code": "(sort (alexandria:hash-table-keys (alexandria:plist-hash-table '(:a 1 :b 2 :c 3) :test 'eq)) #'string<)",
+      "expected": "(:A :B :C)",
+      "explain": "HASH-TABLE-KEYS returns the keys; we sort by name for a stable answer."
     },
     {
       "kind": "example",

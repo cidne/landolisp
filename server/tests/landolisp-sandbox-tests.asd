@@ -12,7 +12,13 @@
   :pathname "."
   :serial t
   :components ((:file "test-evaluator")
-               (:file "test-handlers"))
+               (:file "test-handlers")
+               ;; B4 additions — register but do not modify the originals.
+               (:file "test-subprocess")
+               (:file "test-runner-isolation")
+               ;; B5 additions — curriculum smoke + full HTTP contract.
+               (:file "test-curriculum")
+               (:file "test-api-contract"))
   :perform (test-op (op c)
                     (declare (ignore op c))
                     (uiop:symbol-call :fiveam :run!

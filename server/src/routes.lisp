@@ -29,24 +29,6 @@
 (defun respond-error (code message &optional (status 400))
   (respond-json (error-plist code message) status))
 
-(defmacro with-json-response (&body body)
-  "Run BODY, render its return value as JSON if it is a plist/alist, and
-attach the standard Content-Type and CORS headers. Errors signalled inside
-BODY are translated by WITH-JSON-ERROR-HANDLING."
-  (let ((value (gensym "VALUE")))
-    `(with-json-error-handling
-       (let ((,value (progn ,@body)))
-         (cond
-           ((stringp ,value)
-            (apply-cors-headers)
-            (set-json-content-type)
-            ,value)
-           ((null ,value)
-            (apply-cors-headers)
-            (set-json-content-type)
-            "null")
-           (t (respond-json ,value)))))))
-
 (defun sandbox-error-status (c)
   "Pick an appropriate HTTP status for a SANDBOX-ERROR subtype."
   (cond
@@ -56,6 +38,10 @@ BODY are translated by WITH-JSON-ERROR-HANDLING."
     ((string= (sandbox-error-code c) "invalid_path") 400)
     ((string= (sandbox-error-code c) "not_found") 404)
     ((string= (sandbox-error-code c) "too_many_sessions") 503)
+    ((string= (sandbox-error-code c) "capacity") 503)
+    ((string= (sandbox-error-code c) "session_crashed") 502)
+    ((string= (sandbox-error-code c) "runner_handshake_timeout") 503)
+    ((string= (sandbox-error-code c) "runner_spawn_failed") 503)
     ((string= (sandbox-error-code c) "eval_too_large") 413)
     ((string= (sandbox-error-code c) "read_error") 400)
     (t 400)))
@@ -69,6 +55,27 @@ BODY are translated by WITH-JSON-ERROR-HANDLING."
                       (sandbox-error-status c)))
      (error (c)
        (respond-error "internal_error" (princ-to-string c) 500))))
+
+(defmacro with-json-response (&body body)
+  "Run BODY, render its return value as JSON if it is a plist, and attach
+the standard Content-Type and CORS headers. Conditions signalled inside
+BODY are translated to error JSON by WITH-JSON-ERROR-HANDLING.
+
+Provided for symmetry with the spec; current handlers use
+WITH-JSON-ERROR-HANDLING + RESPOND-JSON directly."
+  (let ((value (gensym "VALUE")))
+    `(with-json-error-handling
+       (let ((,value (progn ,@body)))
+         (cond
+           ((stringp ,value)
+            (apply-cors-headers)
+            (set-json-content-type)
+            ,value)
+           ((null ,value)
+            (apply-cors-headers)
+            (set-json-content-type)
+            "null")
+           (t (respond-json ,value)))))))
 
 (defun request-body-string ()
   "Read the current Hunchentoot request's body as a UTF-8 string."

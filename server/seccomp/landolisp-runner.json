@@ -1,0 +1,105 @@
+{
+  "_comment": [
+    "Seccomp profile for landolisp-runner.",
+    "This is a runc-style profile intended for two use-cases:",
+    "  1. Passed to `docker run --security-opt seccomp=<file>` when the runtime",
+    "     is docker+runc and firejail is NOT used.",
+    "  2. Used as a reference when hardening firejail's --seccomp list.",
+    "",
+    "The default posture is deny-all; the allowlist below is the minimum set",
+    "observed under `strace` while the runner evaluates small Lisp forms.",
+    "Network-related syscalls are NOT allowed: socket, connect, bind, listen,",
+    "accept, sendto, recvfrom, sendmsg, recvmsg. User code that tries to open",
+    "a socket gets EPERM.",
+    "",
+    "Residual risks intentionally left open (we cannot remove them without",
+    "breaking SBCL itself):",
+    "  - mmap / mprotect / madvise: SBCL needs these to grow the heap.",
+    "  - clone / futex / rt_sigaction: needed by bordeaux-threads.",
+    "  - ptrace: denied; debugger attach is blocked.",
+    "  - personality, ioperm, iopl, reboot, kexec_*: denied.",
+    "",
+    "This file is copied into /opt/sandbox/seccomp/landolisp-runner.json at",
+    "image build time; the runtime reads the env var LANDOLISP_SECCOMP_PROFILE",
+    "(unset by default) if a deployment wants to rewire the path."
+  ],
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "defaultErrnoRet": 1,
+  "archMap": [
+    {
+      "architecture": "SCMP_ARCH_X86_64",
+      "subArchitectures": ["SCMP_ARCH_X86", "SCMP_ARCH_X32"]
+    },
+    {
+      "architecture": "SCMP_ARCH_AARCH64",
+      "subArchitectures": []
+    }
+  ],
+  "syscalls": [
+    {
+      "names": [
+        "access", "arch_prctl", "brk",
+        "clock_getres", "clock_gettime", "clock_nanosleep",
+        "clone", "close", "dup", "dup2", "dup3",
+        "execve", "exit", "exit_group",
+        "fcntl", "fchmod", "fstat", "fstatfs", "fsync", "ftruncate",
+        "futex", "getcwd", "getdents", "getdents64",
+        "getegid", "geteuid", "getgid", "getpgrp", "getpid", "getppid",
+        "getrlimit", "getrusage", "gettid", "gettimeofday", "getuid",
+        "ioctl",
+        "lseek", "lstat", "madvise", "mincore", "mkdir", "mmap",
+        "mprotect", "mremap", "munmap",
+        "nanosleep", "newfstatat",
+        "openat", "open", "pipe", "pipe2", "poll", "ppoll",
+        "prctl", "pread64", "prlimit64", "pselect6",
+        "read", "readv", "readlink", "readlinkat",
+        "rename", "renameat", "renameat2",
+        "rt_sigaction", "rt_sigprocmask", "rt_sigreturn",
+        "sched_yield", "select",
+        "set_robust_list", "set_tid_address", "sigaltstack",
+        "stat", "statfs", "statx",
+        "tgkill", "timer_create", "timer_delete",
+        "timer_settime", "timer_gettime",
+        "umask", "uname", "unlink", "unlinkat",
+        "wait4", "waitid",
+        "write", "writev"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    },
+    {
+      "_comment": "Socket family is explicitly blocked. User code cannot open network sockets.",
+      "names": [
+        "socket", "socketpair",
+        "bind", "listen", "accept", "accept4",
+        "connect",
+        "sendto", "sendmsg", "sendmmsg",
+        "recvfrom", "recvmsg", "recvmmsg",
+        "getsockname", "getpeername", "getsockopt", "setsockopt",
+        "shutdown"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 13
+    },
+    {
+      "_comment": "Module load / kernel key / ptrace / reboot / namespace escapes.",
+      "names": [
+        "init_module", "finit_module", "delete_module",
+        "kexec_load", "kexec_file_load",
+        "reboot",
+        "ptrace", "process_vm_readv", "process_vm_writev",
+        "add_key", "keyctl", "request_key",
+        "unshare", "setns",
+        "mount", "umount", "umount2", "pivot_root", "chroot",
+        "personality", "ioperm", "iopl",
+        "perf_event_open", "bpf",
+        "acct", "swapon", "swapoff",
+        "quotactl",
+        "setdomainname", "sethostname",
+        "settimeofday", "clock_settime", "clock_adjtime", "adjtimex",
+        "nfsservctl", "mbind", "migrate_pages", "move_pages"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1
+    }
+  ]
+}

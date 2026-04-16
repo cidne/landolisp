@@ -61,6 +61,14 @@ server/
 * Consider streaming eval output (chunked transfer) for long compiles.
 * Tighten the Quicklisp allow-list once the curriculum stabilises.
 
+## B4 status (M7 hardening)
+
+The first three TODOs above are done. See `AGENT_NOTES_B4.md` for the
+list of files added/modified, exit codes/signals relied on, and the
+remaining integration-pass TODOs (rate limiter, /v1/health metrics,
+LANDOLISP_RUNNER_CORE env wiring, allow-list audit). The streaming-eval
+and allow-list-tightening items are deferred.
+
 ## Things a reviewer should double-check
 
 1. The Dockerfile pre-quickloads many systems eagerly; if any are missing

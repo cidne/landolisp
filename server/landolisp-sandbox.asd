@@ -23,6 +23,12 @@
                (:file "config")
                (:file "json")
                (:file "util")
+               ;; subprocess.lisp must precede sessions.lisp because the
+               ;; session struct's runner-related slots are populated via
+               ;; helpers defined in subprocess.lisp (spawn-runner,
+               ;; kill-runner, runner-alive-p, request-runner). runner.lisp
+               ;; is NOT a component here — it lives in the child core.
+               (:file "subprocess")
                (:file "sessions")
                (:file "eval")
                (:file "quicklisp")
@@ -36,7 +42,9 @@
   :depends-on ("landolisp-sandbox" "fiveam" "drakma")
   :pathname "tests/"
   :serial t
-  :components ((:file "test-smoke"))
+  :components ((:file "test-smoke")
+               (:file "test-curriculum")
+               (:file "test-api-contract"))
   :perform (test-op (op c)
                     (uiop:symbol-call :fiveam :run!
                                       (uiop:find-symbol* :landolisp-sandbox-suite
