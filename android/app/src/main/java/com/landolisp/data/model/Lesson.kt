@@ -44,15 +44,18 @@ data class Lesson(
 /**
  * Polymorphic section. `kind` is the discriminator on disk; kotlinx-serialization will pick
  * the matching subclass based on the [Json] instance configured below.
+ *
+ * Modelled as a `sealed class` per the architecture spec so both Java interop and
+ * exhaustive `when` switches behave predictably.
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("kind")
-sealed interface Section {
+sealed class Section {
 
     @Serializable
     @SerialName("prose")
-    data class Prose(val markdown: String) : Section
+    data class Prose(val markdown: String) : Section()
 
     @Serializable
     @SerialName("example")
@@ -60,7 +63,7 @@ sealed interface Section {
         val code: String,
         val expected: String? = null,
         val explain: String? = null,
-    ) : Section
+    ) : Section()
 
     @Serializable
     @SerialName("exercise")
@@ -69,30 +72,34 @@ sealed interface Section {
         val starter: String = "",
         val hint: String? = null,
         val tests: List<ExerciseTest>,
-    ) : Section
+    ) : Section()
 }
 
+/**
+ * A single automated test for an exercise. Matches the JSON shape
+ *
+ *     { "call": "(fn 1 2)", "equals": "3" }
+ *
+ * Both fields are Lisp source fragments. `call` is evaluated in the sandbox after
+ * the user's starter has been loaded; its printed representation is compared
+ * against `equals` under EQUALP.
+ */
 @Serializable
 data class ExerciseTest(
     val call: String,
     val equals: String,
 )
 
+/** Spec-facing alias: curriculum JSON calls this shape a "Test". */
+typealias Test = ExerciseTest
+
 /**
- * Lightweight summary used by the lesson list. Backed by `/curriculum/index.json`.
+ * Lightweight index used by the lesson list. Backed by `/curriculum/index.json`.
+ * `LessonSummary` itself lives in [LessonSummary.kt].
  */
 @Serializable
 data class LessonIndex(
     val lessons: List<LessonSummary>,
-)
-
-@Serializable
-data class LessonSummary(
-    val id: String,
-    val title: String,
-    val track: String,
-    val order: Int,
-    val estimatedMinutes: Int? = null,
 )
 
 /**

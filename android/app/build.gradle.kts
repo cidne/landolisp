@@ -15,12 +15,12 @@ plugins {
 //
 // `sandbox.base.url` (no suffix) is honored as a fallback that overrides BOTH for
 // developers who only run one variant.
-private val localProps: Properties = Properties().apply {
+val localProps: Properties = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
 
-private fun resolveSandboxUrl(buildType: String, default: String): String {
+fun resolveSandboxUrl(buildType: String, default: String): String {
     val keyed = localProps.getProperty("sandbox.base.url.$buildType")
     val generic = localProps.getProperty("sandbox.base.url")
     return keyed ?: generic ?: default
@@ -83,11 +83,33 @@ android {
 }
 
 // Sync curriculum JSON from /curriculum into assets before each build.
-val syncCurriculum = tasks.register<Exec>("syncCurriculum") {
+//
+// Owned by Agent B3 / scripts/. If the script doesn't yet exist (early bring-up)
+// the task is a no-op so `assembleDebug` still succeeds on a fresh checkout.
+val syncCurriculum = tasks.register("syncCurriculum") {
     group = "build"
     description = "Copies curriculum JSON files into the app's assets/curriculum directory."
-    workingDir = rootProject.projectDir.parentFile
-    commandLine("bash", "scripts/sync-curriculum.sh")
+    val scriptFile = rootProject.projectDir.parentFile.resolve("scripts/sync-curriculum.sh")
+    val sourceDir = rootProject.projectDir.parentFile.resolve("curriculum")
+    val targetDir = layout.projectDirectory.dir("src/main/assets/curriculum").asFile
+    inputs.dir(sourceDir).optional()
+    outputs.dir(targetDir)
+    doLast {
+        if (scriptFile.exists()) {
+            exec {
+                workingDir = rootProject.projectDir.parentFile
+                commandLine("bash", scriptFile.absolutePath)
+            }
+        } else if (sourceDir.exists()) {
+            // Fallback: copy *.json straight across so the app has something to load
+            // even before the helper script is committed.
+            targetDir.mkdirs()
+            sourceDir.listFiles { f -> f.isFile && f.name.endsWith(".json") }
+                ?.forEach { src -> src.copyTo(targetDir.resolve(src.name), overwrite = true) }
+        } else {
+            logger.info("syncCurriculum: no curriculum source dir at $sourceDir; skipping")
+        }
+    }
 }
 
 tasks.named("preBuild") {
