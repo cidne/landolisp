@@ -39,10 +39,13 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.landolisp.data.LessonRepository
 import com.landolisp.data.SandboxRepository
+import com.landolisp.data.model.ExerciseTest
 import com.landolisp.data.model.Lesson
 import com.landolisp.data.model.Section
+import com.landolisp.lisp.CompletionEngine
 import com.landolisp.ui.editor.CodeEditor
 import com.landolisp.ui.editor.CodeEditorState
+import com.landolisp.ui.editor.rememberCompletionEngine
 import com.landolisp.ui.markdown.MarkdownText
 import com.landolisp.ui.theme.CodeTextStyle
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,6 +88,42 @@ class LessonViewModel(
             resp.condition?.let {
                 if (isNotEmpty()) append('\n')
                 append("[${it.type}] ${it.message}")
+            }
+        }
+    }.getOrElse { "Error: ${it.message}" }
+
+    /**
+     * Submit an exercise: first eval the user's [code] (which usually defines a function),
+     * then for each test eval `test.call` in the same session and compare the printed value
+     * to `test.equals`. Returns a human-readable transcript with PASS/FAIL per test.
+     *
+     * Relies on the sandbox runner preserving session state across evals so function
+     * definitions established by [code] are visible to the test calls.
+     */
+    suspend fun submitExercise(code: String, tests: List<ExerciseTest>): String = runCatching {
+        val define = sandbox.eval(code)
+        if (define.condition != null) {
+            return@runCatching "Definition failed:\n[${define.condition.type}] ${define.condition.message}"
+        }
+        val rows = tests.map { t ->
+            val result = runCatching { sandbox.eval(t.call) }.getOrNull()
+            val actual = result?.value ?: "<no value>"
+            val cond = result?.condition
+            val ok = cond == null && actual == t.equals
+            Triple(t, actual, ok to cond)
+        }
+        val passed = rows.count { it.third.first }
+        buildString {
+            append("Tests: ").append(passed).append('/').append(rows.size).append(" passed\n")
+            rows.forEach { (test, actual, okAndCond) ->
+                val (ok, cond) = okAndCond
+                append(if (ok) "[PASS] " else "[FAIL] ")
+                append(test.call).append(" => ").append(actual)
+                if (!ok) {
+                    append("  (expected ").append(test.equals).append(')')
+                    if (cond != null) append("  [").append(cond.type).append("]")
+                }
+                append('\n')
             }
         }
     }.getOrElse { "Error: ${it.message}" }
@@ -150,11 +189,12 @@ private fun LessonContent(lesson: Lesson, vm: LessonViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        val engine by rememberCompletionEngine()
         lesson.sections.forEach { section ->
             when (section) {
                 is Section.Prose -> MarkdownText(markdown = section.markdown)
-                is Section.Example -> ExampleSection(section, vm, lesson.completionSymbols)
-                is Section.Exercise -> ExerciseSection(section, vm, lesson.completionSymbols)
+                is Section.Example -> ExampleSection(section, vm, lesson.completionSymbols, engine)
+                is Section.Exercise -> ExerciseSection(section, vm, lesson.completionSymbols, engine)
             }
         }
     }
@@ -165,6 +205,7 @@ private fun ExampleSection(
     section: Section.Example,
     vm: LessonViewModel,
     completionSymbols: List<String>,
+    engine: CompletionEngine?,
 ) {
     var output by remember { mutableStateOf("") }
     var running by remember { mutableStateOf(false) }
@@ -184,6 +225,7 @@ private fun ExampleSection(
                     text = state.value,
                     onTextChange = { state.value = it },
                     completionSymbols = completionSymbols,
+                    engine = engine,
                 ),
             )
             section.expected?.let {
@@ -212,6 +254,7 @@ private fun ExerciseSection(
     section: Section.Exercise,
     vm: LessonViewModel,
     completionSymbols: List<String>,
+    engine: CompletionEngine?,
 ) {
     var output by remember { mutableStateOf("") }
     var running by remember { mutableStateOf(false) }
@@ -235,6 +278,7 @@ private fun ExerciseSection(
                     text = state.value,
                     onTextChange = { state.value = it },
                     completionSymbols = completionSymbols,
+                    engine = engine,
                 ),
             )
             Button(
@@ -242,10 +286,7 @@ private fun ExerciseSection(
                 onClick = {
                     running = true
                     scope.launch {
-                        // TODO(B4): submit user code, then evaluate each test.call and compare
-                        // against test.equals using a structural comparator (probably another
-                        // sandbox eval producing equalp). For now: just run the code.
-                        output = vm.run(state.value.text)
+                        output = vm.submitExercise(state.value.text, section.tests)
                         running = false
                     }
                 },

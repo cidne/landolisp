@@ -3,8 +3,8 @@ package com.landolisp.data
 import android.content.Context
 import com.landolisp.data.model.LandolispJson
 import com.landolisp.data.model.Lesson
-import com.landolisp.data.model.LessonIndex
 import com.landolisp.data.model.LessonSummary
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -26,8 +26,7 @@ class LessonRepository(
      * callers.
      */
     fun lessons(): Flow<List<LessonSummary>> = flow {
-        val index = readIndex()
-        emit(index.lessons.sortedBy { it.order })
+        emit(readIndex().sortedBy { it.order })
     }.flowOn(Dispatchers.IO)
 
     suspend fun loadLesson(id: String): Lesson {
@@ -38,13 +37,21 @@ class LessonRepository(
         }
     }
 
-    private fun readIndex(): LessonIndex {
+    /**
+     * `index.json` is a flat JSON array of [LessonSummary] per [docs/CURRICULUM.md].
+     * Returns an empty list if the file is missing or malformed (so the UI degrades
+     * to "no lessons found" instead of crashing).
+     */
+    private fun readIndex(): List<LessonSummary> {
         return runCatching {
             context.assets.open(INDEX_PATH).use { input ->
                 @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
-                LandolispJson.decodeFromStream<LessonIndex>(input)
+                LandolispJson.decodeFromStream(
+                    ListSerializer(LessonSummary.serializer()),
+                    input,
+                )
             }
-        }.getOrElse { LessonIndex(lessons = emptyList()) }
+        }.getOrElse { emptyList() }
     }
 
     companion object {

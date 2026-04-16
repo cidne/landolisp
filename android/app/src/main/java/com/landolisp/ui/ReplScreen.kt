@@ -34,6 +34,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.landolisp.data.SandboxRepository
 import com.landolisp.ui.editor.CodeEditor
 import com.landolisp.ui.editor.CodeEditorState
+import com.landolisp.ui.editor.rememberCompletionEngine
 import com.landolisp.ui.theme.CodeTextStyle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -82,8 +83,8 @@ class ReplViewModel(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReplScreen() {
-    val vm: ReplViewModel = viewModel(
+fun ReplScreen(viewModelOverride: ReplViewModel? = null) {
+    val vm: ReplViewModel = viewModelOverride ?: viewModel(
         factory = viewModelFactory {
             initializer { ReplViewModel(SandboxRepository()) }
         },
@@ -92,6 +93,7 @@ fun ReplScreen() {
     val running by vm.running.collectAsState()
     val scope = rememberCoroutineScope()
     val editorState = remember { mutableStateOf(TextFieldValue("")) }
+    val engine by rememberCompletionEngine()
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(title = { Text("Sandbox") })
@@ -112,6 +114,7 @@ fun ReplScreen() {
                     state = CodeEditorState(
                         text = editorState.value,
                         onTextChange = { editorState.value = it },
+                        engine = engine,
                     ),
                     modifier = Modifier.padding(12.dp),
                     onSubmit = {

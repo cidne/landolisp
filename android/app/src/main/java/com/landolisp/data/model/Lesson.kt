@@ -93,14 +93,9 @@ data class ExerciseTest(
 /** Spec-facing alias: curriculum JSON calls this shape a "Test". */
 typealias Test = ExerciseTest
 
-/**
- * Lightweight index used by the lesson list. Backed by `/curriculum/index.json`.
- * `LessonSummary` itself lives in [LessonSummary.kt].
- */
-@Serializable
-data class LessonIndex(
-    val lessons: List<LessonSummary>,
-)
+// LessonIndex was deleted: `curriculum/index.json` is a flat JSON array of
+// LessonSummary per docs/CURRICULUM.md, and LessonRepository decodes it
+// directly with ListSerializer(LessonSummary.serializer()).
 
 /**
  * Project-wide [Json] instance. Keep one — every consumer should reuse it so the
