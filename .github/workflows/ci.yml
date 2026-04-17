@@ -46,7 +46,13 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+      # Pin Gradle 8.10.2: AGP 8.5.x requires >= 8.7, and Gradle 9.x removed
+      # the deprecated `kotlinOptions` extension we used to depend on. The
+      # build script now uses the modern compilerOptions DSL so 8.10.2 is
+      # the sweet spot.
       - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.10.2'
       - name: sync curriculum into assets
         run: bash scripts/sync-curriculum.sh
       - name: ensure gradle wrapper jar exists
@@ -54,7 +60,7 @@ jobs:
         run: |
           if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
             echo "gradle-wrapper.jar missing; regenerating via system gradle"
-            gradle wrapper --gradle-version 8.5 --distribution-type bin
+            gradle wrapper --gradle-version 8.10.2 --distribution-type bin
           fi
       - name: assemble debug
         working-directory: android
