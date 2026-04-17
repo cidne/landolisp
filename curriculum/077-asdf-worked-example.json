@@ -1,0 +1,43 @@
+{
+  "id": "077-asdf-worked-example",
+  "title": "Worked Example: Two-File ASDF System in the Sandbox",
+  "track": "system",
+  "order": 77,
+  "estimatedMinutes": 15,
+  "prerequisites": ["076-test-systems"],
+  "completionSymbols": ["asdf:defsystem", "asdf:load-asd", "asdf:load-system", "in-package", "defpackage", "uiop:read-file-string", "uiop:getcwd"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Worked Example: Two-File ASDF System in the Sandbox\n\nLet's stand up a real ASDF system from inside the sandbox. The sandbox supports per-session files via\n\n```\nPUT    /v1/sessions/{id}/files/{path}\nGET    /v1/sessions/{id}/files\nGET    /v1/sessions/{id}/files/{path}\nDELETE /v1/sessions/{id}/files/{path}\n```\n\nFiles you `PUT` land in `/var/sandbox/<session>/`, which is also your current directory when code runs. So you can `PUT` `cool.asd` and `cool.lisp` from outside, then load them inside.\n\n**Step 1 — write `cool.asd`** (via the file API):\n\n```lisp\n(asdf:defsystem #:cool\n  :description \"A tiny example.\"\n  :serial t\n  :components ((:file \"cool\")))\n```\n\n**Step 2 — write `cool.lisp`** (via the file API):\n\n```lisp\n(defpackage #:cool\n  (:use #:cl)\n  (:export #:greet))\n\n(in-package #:cool)\n\n(defun greet (name)\n  (format nil \"hello, ~a\" name))\n```\n\n**Step 3 — load it from the REPL inside the session:**\n\n```lisp\n(asdf:load-asd (merge-pathnames \"cool.asd\" (uiop:getcwd)))\n(asdf:load-system :cool)\n(cool:greet \"world\")   ; => \"hello, world\"\n```\n\n`load-asd` registers the system without needing it on the search path. `load-system` then loads the components.\n\nThe rest of this lesson exercises just the **load-asd-from-string** trick: rather than write to disk, we'll define the same system inline (via `defsystem`) and confirm we can call its functions. The file-API version is what you'd do in a real workflow; the inline version is what we can test deterministically here."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:cool-inline :serial t :components ()) (defpackage #:cool-inline-pkg (:use #:cl) (:export #:greet)) (defun cool-inline-pkg:greet (n) (format nil \"hello, ~a\" n)) (cool-inline-pkg:greet \"world\"))",
+      "expected": "\"hello, world\"",
+      "explain": "Inline simulation of the worked example: define the system, define the package, define the function (qualified so we don't need IN-PACKAGE), call it. The file-based version would let ASDF orchestrate this from cool.asd."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:cool-inline2 :components ()) (asdf:component-name (asdf:find-system :cool-inline2)))",
+      "expected": "\"cool-inline2\"",
+      "explain": "DEFSYSTEM registers the system; FIND-SYSTEM looks it up by name."
+    },
+    {
+      "kind": "example",
+      "code": "(fboundp 'asdf:load-asd)",
+      "expected": "T",
+      "explain": "ASDF:LOAD-ASD is the function for loading a single .asd file by absolute path. The file-API workflow uses it."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a package GREETER (using CL, exporting GREET) and a function GREETER:GREET (NAME) returning the string \"hi, NAME\" (lower-case 'hi'). Then define LOAD-GREETER-INLINE () that returns (greeter:greet \"agent\"). The grader calls LOAD-GREETER-INLINE.",
+      "starter": "(defpackage #:greeter\n  (:use #:cl)\n  (:export #:greet))\n\n(in-package #:greeter)\n\n(defun greet (name)\n  )\n\n(in-package #:cl-user)\n\n(defun load-greeter-inline ()\n  )",
+      "hint": "(format nil \"hi, ~a\" name) inside greeter:greet; (greeter:greet \"agent\") inside load-greeter-inline.",
+      "tests": [
+        { "call": "(load-greeter-inline)", "equals": "\"hi, agent\"" },
+        { "call": "(greeter:greet \"world\")", "equals": "\"hi, world\"" }
+      ]
+    }
+  ]
+}

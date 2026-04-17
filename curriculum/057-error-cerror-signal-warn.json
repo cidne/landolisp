@@ -1,0 +1,50 @@
+{
+  "id": "057-error-cerror-signal-warn",
+  "title": "ERROR, CERROR, SIGNAL, WARN",
+  "track": "conditions",
+  "order": 57,
+  "estimatedMinutes": 10,
+  "prerequisites": ["056-condition-system"],
+  "completionSymbols": ["error", "cerror", "signal", "warn", "simple-error", "simple-warning", "handler-case", "ignore-errors"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# ERROR, CERROR, SIGNAL, WARN\n\nThe four condition-signaling primitives differ in (a) the **default class** of the condition they create, and (b) what they do when **no handler** is present.\n\n| Function   | Default class      | If unhandled                             |\n|------------|--------------------|------------------------------------------|\n| `signal`   | `simple-condition` | Returns `NIL` silently.                  |\n| `warn`     | `simple-warning`   | Prints the warning to `*error-output*`.  |\n| `cerror`   | `simple-error`     | Enters the debugger; user can `:continue`. |\n| `error`    | `simple-error`     | Enters the debugger; no automatic continue. |\n\nAll of them accept either a **format-control string + args** (giving you a `simple-*` condition built on the fly) or a **condition class name** with `:initarg` keywords.\n\n```lisp\n(error \"divisor was ~a\" 0)                ; format-string form\n(error 'division-by-zero :operation '/)    ; class form\n```\n\n`cerror` is special: its first argument is the **continue-format-string** describing what happens if the user picks the `continue` restart. If a handler picks that restart, `cerror` simply returns `NIL` and execution proceeds.\n\nA handler bound for a more general class will also catch the more specific ones: a handler for `condition` catches `warning`s and `error`s alike."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (error \"boom: ~a\" 42) (simple-error (c) (format nil \"got ~a\" (simple-condition-format-arguments c))))",
+      "expected": "\"got (42)\"",
+      "explain": "The format args are stored on the condition; we pull them back out."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (signal 'simple-condition :format-control \"hi\") (condition (c) (declare (ignore c)) :saw-it))",
+      "expected": ":SAW-IT",
+      "explain": "SIGNAL transfers control to a handler if one matches; the handler returns :SAW-IT."
+    },
+    {
+      "kind": "example",
+      "code": "(signal 'simple-condition :format-control \"nobody listening\")",
+      "expected": "NIL",
+      "explain": "Without a handler bound, SIGNAL just returns NIL. Useful for advisory events."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (cerror \"keep going\" \"something happened\") (simple-error (c) (declare (ignore c)) :caught))",
+      "expected": ":CAUGHT",
+      "explain": "CERROR signals an error like ERROR; HANDLER-CASE still catches it. The first string is the continue-prompt, used only if a CONTINUE restart fires."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define CLASSIFY that takes a thunk. Run it under HANDLER-CASE. If it signals an ERROR return :ERROR, if it signals a WARNING return :WARNING, otherwise return :OK. Hint: order the handler clauses from most specific to most general.",
+      "starter": "(defun classify (thunk)\n  )",
+      "hint": "(handler-case (progn (funcall thunk) :ok) (warning () :warning) (error () :error)).",
+      "tests": [
+        { "call": "(classify (lambda () 1))", "equals": ":OK" },
+        { "call": "(classify (lambda () (error \"x\")))", "equals": ":ERROR" },
+        { "call": "(classify (lambda () (warn \"x\")))", "equals": ":WARNING" }
+      ]
+    }
+  ]
+}

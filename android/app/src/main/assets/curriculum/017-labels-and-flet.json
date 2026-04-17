@@ -1,0 +1,59 @@
+{
+  "id": "017-labels-and-flet",
+  "title": "Local Functions: FLET and LABELS",
+  "track": "functions",
+  "order": 17,
+  "estimatedMinutes": 10,
+  "prerequisites": ["016-multiple-values"],
+  "completionSymbols": ["flet", "labels", "defun", "funcall", "function", "mapcar"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Local Functions: FLET and LABELS\n\n`let` binds values; `flet` and `labels` bind **functions** locally.\n\n* `flet` — the bindings are *non-recursive*: inside a definition, the name refers to the **outer** function of that name (if any). Siblings cannot see each other either.\n* `labels` — *mutually recursive*: every local binding is visible inside every binding (including itself).\n\n```lisp\n(labels ((even? (n) (if (zerop n) t   (odd? (1- n))))\n         (odd?  (n) (if (zerop n) nil (even? (1- n)))))\n  (even? 10))   ; => T\n```\n\nUse `flet` for small locally-scoped helpers; reach for `labels` the moment you need recursion or mutual reference."
+    },
+    {
+      "kind": "example",
+      "code": "(flet ((double (x) (* 2 x))) (double 21))",
+      "expected": "42",
+      "explain": "FLET establishes DOUBLE locally; call it like any function."
+    },
+    {
+      "kind": "example",
+      "code": "(flet ((double (x) (* 2 x))) (mapcar #'double '(1 2 3)))",
+      "expected": "(2 4 6)",
+      "explain": "Local functions are first-class too; pass with #'."
+    },
+    {
+      "kind": "example",
+      "code": "(labels ((fact (n) (if (zerop n) 1 (* n (fact (1- n)))))) (fact 6))",
+      "expected": "720",
+      "explain": "LABELS allows the binding to see itself."
+    },
+    {
+      "kind": "example",
+      "code": "(labels ((even? (n) (if (zerop n) t (odd? (1- n)))) (odd? (n) (if (zerop n) nil (even? (1- n))))) (even? 10))",
+      "expected": "T",
+      "explain": "Mutually recursive locals — impossible with FLET."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SUM-SQUARES that uses LABELS to define a local SQ helper and sums the squares of its input list.",
+      "starter": "(defun sum-squares (xs)\n  )",
+      "hint": "(labels ((sq (x) (* x x))) (reduce #'+ (mapcar #'sq xs))).",
+      "tests": [
+        { "call": "(sum-squares '(1 2 3 4))", "equals": "30" },
+        { "call": "(sum-squares nil)", "equals": "0" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-DOWN-TO-ZERO that uses LABELS to define a local recursive helper producing a list from N down to 0 inclusive.",
+      "starter": "(defun count-down-to-zero (n)\n  )",
+      "hint": "(labels ((down (k) (if (minusp k) nil (cons k (down (1- k)))))) (down n)).",
+      "tests": [
+        { "call": "(count-down-to-zero 0)", "equals": "(0)" },
+        { "call": "(count-down-to-zero 3)", "equals": "(3 2 1 0)" }
+      ]
+    }
+  ]
+}

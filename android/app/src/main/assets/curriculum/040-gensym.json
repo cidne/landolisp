@@ -1,0 +1,61 @@
+{
+  "id": "040-gensym",
+  "title": "GENSYM and WITH-GENSYMS",
+  "track": "macros",
+  "order": 40,
+  "estimatedMinutes": 12,
+  "prerequisites": ["039-macroexpand"],
+  "completionSymbols": ["gensym", "defmacro", "let", "incf", "list", "loop", "mapcar"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# GENSYM and WITH-GENSYMS\n\nThe variable-capture problem from the last lesson is fixed by **never using a literal symbol** as a temporary in your expansion. Instead, you ask the system for a brand-new, guaranteed-unique symbol with `(gensym)`:\n\n```lisp\n(defmacro twice (form)\n  (let ((tmp (gensym \"TMP-\")))\n    `(let ((,tmp ,form))\n       (list ,tmp ,tmp))))\n```\n\nNow each expansion gets its *own* fresh symbol — `#:TMP-37`, then `#:TMP-38`, and so on — that no user code can collide with.\n\nKey idioms:\n\n* The argument to `gensym` is a **prefix string** for human readability. It's a debugging aid only; the symbol is unique regardless.\n* When a macro needs several gensyms it gets noisy. The community-standard `with-gensyms` macro (also called `with-unique-names`) wraps it:\n\n```lisp\n(defmacro with-gensyms (names &body body)\n  `(let ,(mapcar (lambda (n) `(,n (gensym ,(symbol-name n)))) names)\n     ,@body))\n```\n\nUsed as `(with-gensyms (a b c) `(let ((,a 1)) ...))`.\n\nYou should also evaluate any **macro argument** at most once in the expansion if its evaluation could have side effects — bind it to a gensym at the top, then reference the gensym. We'll formalise that as the `once-only` pattern in the next lesson."
+    },
+    {
+      "kind": "example",
+      "code": "(symbolp (gensym))",
+      "expected": "T",
+      "explain": "GENSYM returns a fresh, uninterned symbol."
+    },
+    {
+      "kind": "example",
+      "code": "(eq (gensym) (gensym))",
+      "expected": "NIL",
+      "explain": "Each call yields a NEW symbol, even with the same prefix."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro twice (form) (let ((tmp (gensym))) `(let ((,tmp ,form)) (list ,tmp ,tmp)))) (let ((tmp 0)) (twice (incf tmp))))",
+      "expected": "(1 1)",
+      "explain": "The macro now uses a gensymmed temporary, so the user's TMP would be untouched even if shadowed. (The form (incf tmp) still bumped the user's TMP from 0 to 1; the inner LIST returns (1 1) — but the gensym binding is unique.)"
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro with-gensyms (names &body body) `(let ,(mapcar (lambda (n) `(,n (gensym ,(symbol-name n)))) names) ,@body)) (defmacro swap (a b) (with-gensyms (tmp) `(let ((,tmp ,a)) (setf ,a ,b) (setf ,b ,tmp)))) (let ((x 1) (y 2)) (swap x y) (list x y)))",
+      "expected": "(2 1)",
+      "explain": "WITH-GENSYMS introduces a fresh TMP symbol used inside the SWAP expansion."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define the macro MY-OR2 that takes exactly two arguments and short-circuits like OR: it evaluates A; if A is non-NIL, it returns A; otherwise it returns the value of B. A must be evaluated only once. Use GENSYM.",
+      "starter": "(defmacro my-or2 (a b)\n  )",
+      "hint": "(let ((g (gensym))) `(let ((,g ,a)) (if ,g ,g ,b))).",
+      "tests": [
+        { "call": "(my-or2 nil 42)", "equals": "42" },
+        { "call": "(my-or2 7 (error \"never\"))", "equals": "7" },
+        { "call": "(my-or2 nil nil)", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a macro DOUBLE-EVAL that takes a form and returns a list containing two evaluations of it (intentionally — that's the lesson). Then define DOUBLE-ONCE that gensyms a temporary and returns a list of two copies of a SINGLE evaluation. Test both with the variable counter (defparameter *n* 0); calling (incf *n*) twice in DOUBLE-EVAL bumps *N* by 2; in DOUBLE-ONCE only by 1.",
+      "starter": "(defparameter *n* 0)\n\n(defmacro double-eval (form)\n  )\n\n(defmacro double-once (form)\n  )",
+      "hint": "DOUBLE-EVAL: `(list ,form ,form). DOUBLE-ONCE: (let ((g (gensym))) `(let ((,g ,form)) (list ,g ,g))).",
+      "tests": [
+        { "call": "(progn (setf *n* 0) (double-eval (incf *n*)) *n*)", "equals": "2" },
+        { "call": "(progn (setf *n* 0) (double-once (incf *n*)) *n*)", "equals": "1" },
+        { "call": "(progn (setf *n* 0) (double-once (incf *n*)))", "equals": "(1 1)" }
+      ]
+    }
+  ]
+}

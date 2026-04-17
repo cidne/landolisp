@@ -1,0 +1,43 @@
+{
+  "id": "048-defgeneric-defmethod",
+  "title": "DEFGENERIC and DEFMETHOD",
+  "track": "clos",
+  "order": 48,
+  "estimatedMinutes": 13,
+  "prerequisites": ["047-slot-access"],
+  "completionSymbols": ["defgeneric", "defmethod", "defclass", "make-instance", "slot-value", "+", "*", "format"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DEFGENERIC and DEFMETHOD\n\nA **generic function** is a function whose behaviour is selected at call time based on the **types** of its arguments. You declare it once with `defgeneric`, then add **methods** with `defmethod`.\n\n```lisp\n(defgeneric area (shape))\n\n(defmethod area ((s circle))\n  (* pi (expt (circle-radius s) 2)))\n\n(defmethod area ((s rect))\n  (* (rect-w s) (rect-h s)))\n```\n\nWhen you call `(area some-shape)`, CLOS picks the most specific applicable method based on the actual class of `some-shape`.\n\nKey points:\n\n* `defgeneric` is optional — adding the first `defmethod` will create the generic function — but writing the `defgeneric` makes the contract explicit and is good documentation.\n* The specialiser `(s circle)` says \"this method applies when the first argument is a `circle`\". An unspecialised parameter (`s`) means \"matches anything\".\n* Specialisers may be class names OR `(eql object)` — see lesson 053.\n* You can specialise more than one parameter — that's **multiple dispatch** (lesson 052).\n\nA generic function is a single Lisp function, owned by no class. Methods are how classes plug *into* it. This is one of the things that makes CLOS feel different from class-based OO in Java/Python."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass animal () ()) (defclass dog (animal) ()) (defclass cat (animal) ()) (defgeneric speak (a)) (defmethod speak ((a dog)) :woof) (defmethod speak ((a cat)) :meow) (list (speak (make-instance 'dog)) (speak (make-instance 'cat))))",
+      "expected": "(:WOOF :MEOW)",
+      "explain": "Each class plugs its own method into the SPEAK generic function."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass animal () ()) (defclass dog (animal) ()) (defgeneric speak (a)) (defmethod speak ((a animal)) :generic) (defmethod speak ((a dog)) :woof) (speak (make-instance 'dog)))",
+      "expected": ":WOOF",
+      "explain": "Most specific method wins. DOG is more specific than ANIMAL."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defgeneric describe-it (x)) (defmethod describe-it ((x integer)) :int) (defmethod describe-it ((x string)) :str) (defmethod describe-it (x) (declare (ignore x)) :other) (list (describe-it 5) (describe-it \"hi\") (describe-it 'sym)))",
+      "expected": "(:INT :STR :OTHER)",
+      "explain": "Methods can specialise on built-in classes (INTEGER, STRING) too. Unspecialised parameter is the catch-all."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a class SHAPE, and subclasses CIRCLE (slot RADIUS, accessor radius-of) and SQUARE (slot SIDE, accessor side-of). Define a generic function PERIMETER and methods that compute (* 2 pi r) and (* 4 side). Tests use exact integer side and check perimeter for SQUARE only (avoid float comparisons).",
+      "starter": "(defclass shape () ())\n(defclass circle (shape) ((radius :initarg :radius :accessor radius-of)))\n(defclass square (shape) ((side :initarg :side :accessor side-of)))\n\n(defgeneric perimeter (s))\n",
+      "hint": "(defmethod perimeter ((s square)) (* 4 (side-of s))) and analogously for CIRCLE.",
+      "tests": [
+        { "call": "(perimeter (make-instance 'square :side 3))", "equals": "12" },
+        { "call": "(perimeter (make-instance 'square :side 10))", "equals": "40" }
+      ]
+    }
+  ]
+}

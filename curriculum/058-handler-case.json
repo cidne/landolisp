@@ -1,0 +1,53 @@
+{
+  "id": "058-handler-case",
+  "title": "HANDLER-CASE: Java-style Catch",
+  "track": "conditions",
+  "order": 58,
+  "estimatedMinutes": 10,
+  "prerequisites": ["057-error-cerror-signal-warn"],
+  "completionSymbols": ["handler-case", "error", "type-error", "division-by-zero", "arithmetic-error", "simple-error", ":no-error"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# HANDLER-CASE: Java-style Catch\n\n`handler-case` is the **unwinding** form. Conceptually it is `try`/`catch`:\n\n```lisp\n(handler-case PROTECTED-FORM\n  (CONDITION-TYPE-1 (var) handler-body-1)\n  (CONDITION-TYPE-2 (var) handler-body-2)\n  ...\n  (:no-error    (var ...) success-body))\n```\n\nWhen `PROTECTED-FORM` signals a condition that matches one of the type clauses, the stack between the signal site and the `handler-case` is unwound, then the handler runs and its value becomes the value of the whole `handler-case`. The clauses are tried in order, so put the **most specific** type first.\n\nThe optional `:no-error` clause runs if the protected form returned normally; its lambda list binds to the form's values.\n\nVariable-binding shorthand: if you don't need the condition, write `()` for the variable list.\n\n`handler-case` *cannot* invoke a restart and resume the protected form — it always unwinds. For that you need `handler-bind`, the next lesson."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (/ 1 0) (division-by-zero () :div) (arithmetic-error () :arith))",
+      "expected": ":DIV",
+      "explain": "DIVISION-BY-ZERO is a subclass of ARITHMETIC-ERROR. Because it appears first, it matches."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (+ 1 2) (error () :failed) (:no-error (v) (list :ok v)))",
+      "expected": "(:OK 3)",
+      "explain": "No condition was signaled, so :NO-ERROR runs with the form's value bound to V."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (car 5) (type-error (c) (list :type (type-error-expected-type c))))",
+      "expected": "(:TYPE LIST)",
+      "explain": "Calling CAR on a non-list signals TYPE-ERROR; we read its EXPECTED-TYPE slot."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SAFE-DIV that returns A divided by B, but if B is zero return :INF.",
+      "starter": "(defun safe-div (a b)\n  )",
+      "hint": "(handler-case (/ a b) (division-by-zero () :inf)).",
+      "tests": [
+        { "call": "(safe-div 10 2)", "equals": "5" },
+        { "call": "(safe-div 1 0)", "equals": ":INF" },
+        { "call": "(safe-div 0 0)", "equals": ":INF" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define TRY that takes a thunk. If it signals any ERROR, return the symbol :ERR; otherwise return a list (:OK value).",
+      "starter": "(defun try (thunk)\n  )",
+      "tests": [
+        { "call": "(try (lambda () 42))", "equals": "(:OK 42)" },
+        { "call": "(try (lambda () (error \"x\")))", "equals": ":ERR" }
+      ]
+    }
+  ]
+}

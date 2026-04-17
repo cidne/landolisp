@@ -1,0 +1,43 @@
+{
+  "id": "072-defsystem",
+  "title": "DEFSYSTEM Basics",
+  "track": "system",
+  "order": 72,
+  "estimatedMinutes": 12,
+  "prerequisites": ["071-asdf-intro"],
+  "completionSymbols": ["asdf:defsystem", ":depends-on", ":components", ":serial", ":file", ":author", ":license", ":description"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DEFSYSTEM Basics\n\nThe canonical `.asd` file:\n\n```lisp\n(asdf:defsystem #:cool\n  :description \"A small example system.\"\n  :author      \"You <you@example.com>\"\n  :license     \"MIT\"\n  :version     \"0.1.0\"\n  :depends-on  (#:alexandria)\n  :serial      t\n  :components  ((:file \"package\")\n                (:file \"core\")))\n```\n\nThe required keys are `:components` (what files), and almost-required `:depends-on` (other systems). Everything else is metadata.\n\n* `:depends-on` — a list of system names. ASDF loads each before this system. They go through the same registry, so `#:alexandria` will be found by Quicklisp or wherever else it lives.\n* `:components` — a list of component descriptors. The most common is `(:file \"NAME\")` referring to `NAME.lisp` (no extension; ASDF supplies it). Others include `(:module ...)` (a subdirectory) and `(:static-file ...)` (data files copied alongside).\n* `:serial t` — load components in the order written. Each implicitly depends on the previous one. Without `:serial`, you must declare dependencies per component with `:depends-on`.\n\nWhen ASDF compiles a file (the `compile-op`), the artefact lands in a per-implementation cache (`~/.cache/common-lisp/...`), keyed by source path and SBCL version. Edit a file and reload, and only it (plus things that depend on it) is recompiled."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:demo-sys :description \"d\" :components ()) (asdf:component-name (asdf:find-system :demo-sys)))",
+      "expected": "\"demo-sys\"",
+      "explain": "A trivial system with no components. ASDF still registers it; FIND-SYSTEM returns its object."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:demo-sys2 :description \"d\" :components ()) (asdf:system-description (asdf:find-system :demo-sys2)))",
+      "expected": "\"d\"",
+      "explain": "Metadata round-trips through DEFSYSTEM."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (asdf:defsystem #:demo-sys3 :depends-on () :components ()) (length (asdf:system-depends-on (asdf:find-system :demo-sys3))))",
+      "expected": "0",
+      "explain": "An empty :DEPENDS-ON. SYSTEM-DEPENDS-ON reads it back."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a system named MINI-SYS with no components, no dependencies, description \"mini\". Then define ASD-DESC (NAME) returning the description string of system NAME (a keyword or string).",
+      "starter": "(asdf:defsystem #:mini-sys\n  :description \"mini\"\n  :components ())\n\n(defun asd-desc (name)\n  )",
+      "hint": "(asdf:system-description (asdf:find-system name)).",
+      "tests": [
+        { "call": "(asd-desc :mini-sys)", "equals": "\"mini\"" },
+        { "call": "(asdf:component-name (asdf:find-system :mini-sys))", "equals": "\"mini-sys\"" }
+      ]
+    }
+  ]
+}

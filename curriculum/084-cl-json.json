@@ -1,0 +1,56 @@
+{
+  "id": "084-cl-json",
+  "title": "CL-JSON: JSON Encode/Decode",
+  "track": "libraries",
+  "order": 84,
+  "estimatedMinutes": 10,
+  "prerequisites": ["083-str"],
+  "completionSymbols": ["ql:quickload", "cl-json:encode-json-to-string", "cl-json:decode-json-from-string", "cl-json:encode-json-alist-to-string", "cl-json:decode-json-from-source"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# CL-JSON: JSON Encode/Decode\n\nCL-JSON maps between JSON and Lisp's natural data shapes:\n\n| JSON          | Lisp                          |\n|---------------|-------------------------------|\n| `null`        | `NIL`                         |\n| `true`/`false`| `T` / `NIL`                   |\n| number        | number                        |\n| string        | string                        |\n| array         | list                          |\n| object        | alist (`((:key . value) ...)`)|\n\nMain entry points:\n\n* `(cl-json:encode-json-to-string LISP-VALUE)` — serialise. Lists become JSON arrays; alists become JSON objects.\n* `(cl-json:decode-json-from-string STRING)` — parse a string. Object keys become **camel-cased keyword symbols** by default (`\"first_name\"` => `:FIRST-NAME`).\n* `cl-json:*json-symbols-package*` — controls which package decoded keys are interned in.\n* `cl-json:encode-json-alist-to-string` — be explicit that you want object encoding.\n\nGotcha: an empty list `()` is ambiguous between \"empty array\" and \"empty object\". CL-JSON encodes it as `[]`. To force `{}`, pass an alist where every value is `:null` or use the long-form encoder API."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :cl-json)",
+      "expected": "(:CL-JSON)",
+      "explain": "Load CL-JSON."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-json:encode-json-to-string '(1 2 3))",
+      "expected": "\"[1,2,3]\"",
+      "explain": "A list encodes as a JSON array."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-json:encode-json-to-string '((:name . \"ada\") (:age . 36)))",
+      "expected": "\"{\\\"name\\\":\\\"ada\\\",\\\"age\\\":36}\"",
+      "explain": "An alist encodes as a JSON object. The Lisp printed form shows escaped quotes."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-json:decode-json-from-string \"[1,2,3]\")",
+      "expected": "(1 2 3)",
+      "explain": "JSON array round-trips to a Lisp list."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-json:decode-json-from-string \"{\\\"name\\\":\\\"ada\\\"}\")",
+      "expected": "((:NAME . \"ada\"))",
+      "explain": "JSON object round-trips to an alist with keyword keys."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define ROUNDTRIP-LIST (L) that encodes L to JSON and decodes the result back, returning the decoded value. For lists of small numbers it should equal the input.",
+      "starter": "(defun roundtrip-list (l)\n  )",
+      "hint": "(cl-json:decode-json-from-string (cl-json:encode-json-to-string l)).",
+      "tests": [
+        { "call": "(roundtrip-list '(1 2 3))", "equals": "(1 2 3)" },
+        { "call": "(roundtrip-list '())", "equals": "NIL" },
+        { "call": "(roundtrip-list '(10 20 30 40))", "equals": "(10 20 30 40)" }
+      ]
+    }
+  ]
+}

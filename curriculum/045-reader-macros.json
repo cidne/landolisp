@@ -1,0 +1,49 @@
+{
+  "id": "045-reader-macros",
+  "title": "Reader Macros",
+  "track": "macros",
+  "order": 45,
+  "estimatedMinutes": 13,
+  "prerequisites": ["044-setf-places"],
+  "completionSymbols": ["set-macro-character", "set-dispatch-macro-character", "make-dispatch-macro-character", "read", "read-char", "copy-readtable", "*readtable*", "quote"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Reader Macros\n\nMacros transform parsed code. **Reader macros** transform *characters* into parsed code — they extend the syntax of Lisp itself.\n\nEvery character the reader sees has an entry in the current **readtable**. Most characters are `constituent` (they form tokens). A few are special:\n\n* `(` calls the reader function that builds lists.\n* `'` calls the one that expands to `(quote ...)`.\n* `\"` starts a string.\n* `;` starts a line comment.\n* `#` is a **dispatch** character — it reads the next character and looks that up in a sub-table. That's how you get `#'foo` (function), `#(1 2 3)` (vector literal), `#\\A` (character), `#P\"/tmp\"` (pathname), `#X` / `#B` / `#O` (radix), `#|...|#` (block comment), `#.form` (read-time eval), and so on.\n\nTwo APIs define your own:\n\n* `(set-macro-character char fn)` — when the reader sees `char`, it calls `fn` with the stream and the character.\n* `(set-dispatch-macro-character disp sub fn)` — when it sees `disp` followed by `sub`, it calls `fn`.\n\nYour function reads whatever characters it wants from the stream and returns a Lisp object that takes the place of the raw characters.\n\n**Warning:** reader macros are global mutable state. Install them on a *copy* of the readtable and use `let` + `*readtable*` to scope them, or you'll mangle code elsewhere in your image.\n\nThe example below installs a tiny `#?` dispatch macro that reads one form and wraps it in a list of `:maybe`."
+    },
+    {
+      "kind": "example",
+      "code": "(car (read-from-string \"#'foo\"))",
+      "expected": "FUNCTION",
+      "explain": "The dispatch #' expands to (FUNCTION FOO); the car of that list is the symbol FUNCTION."
+    },
+    {
+      "kind": "example",
+      "code": "(read-from-string \"#(1 2 3)\")",
+      "expected": "#(1 2 3)",
+      "explain": "#( is another built-in dispatch: it reads a vector literal. The printed form round-trips."
+    },
+    {
+      "kind": "example",
+      "code": "(read-from-string \"#\\\\A\")",
+      "expected": "#\\A",
+      "explain": "#\\ reads the next token as a character name. (The source string doubles the backslash for JSON.)"
+    },
+    {
+      "kind": "example",
+      "code": "(let ((*readtable* (copy-readtable))) (set-dispatch-macro-character #\\# #\\? (lambda (stream char1 char2) (declare (ignore char1 char2)) (list :maybe (read stream t nil t)))) (read-from-string \"#?42\"))",
+      "expected": "(:MAYBE 42)",
+      "explain": "We installed a local #? reader that wraps the next form. The whole thing is scoped by our LET on *READTABLE*."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Write INSTALL-BANG that clobbers the current *readtable* to make #! a dispatch reader macro that reads one form and returns (negate FORM). Then provide READ-BANG which runs INSTALL-BANG on a LOCAL copy of the readtable and reads STRING, returning the resulting object. (Using a local readtable keeps the change from leaking.)",
+      "starter": "(defun install-bang (rt)\n  )\n\n(defun read-bang (string)\n  )",
+      "hint": "install-bang: (set-dispatch-macro-character #\\# #\\! (lambda (stream c1 c2) (declare (ignore c1 c2)) (list 'negate (read stream t nil t))) rt). read-bang: (let ((*readtable* (copy-readtable))) (install-bang *readtable*) (read-from-string string)).",
+      "tests": [
+        { "call": "(read-bang \"#!42\")", "equals": "(NEGATE 42)" },
+        { "call": "(read-bang \"#!(+ 1 2)\")", "equals": "(NEGATE (+ 1 2))" }
+      ]
+    }
+  ]
+}

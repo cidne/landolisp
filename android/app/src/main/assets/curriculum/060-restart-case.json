@@ -1,0 +1,44 @@
+{
+  "id": "060-restart-case",
+  "title": "RESTART-CASE, INVOKE-RESTART, FIND-RESTART",
+  "track": "conditions",
+  "order": 60,
+  "estimatedMinutes": 12,
+  "prerequisites": ["059-handler-bind"],
+  "completionSymbols": ["restart-case", "invoke-restart", "find-restart", "handler-bind", "error", "use-value", "continue"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# RESTART-CASE, INVOKE-RESTART, FIND-RESTART\n\n**Restarts** are named recovery points. The signaling code establishes them with `restart-case`; a handler somewhere up the stack picks one with `invoke-restart`.\n\n```lisp\n(restart-case PROTECTED-FORM\n  (RESTART-NAME (lambda-list) body)\n  ...)\n```\n\nIf `PROTECTED-FORM` completes normally, its value is the result. If any restart is invoked, its `body` runs — and **that body's value** becomes the result of the whole `restart-case`. The stack between the signal site and the `restart-case` unwinds, but the stack *outside* the `restart-case` is untouched.\n\nTo invoke a restart from a handler:\n\n```lisp\n(invoke-restart 'restart-name arg ...)\n```\n\nYou can probe with `(find-restart 'name)` to check whether a restart is currently active — useful when a handler wants to try a specific recovery but fall back if it isn't offered.\n\nCombined, `handler-bind` + `restart-case` let the signaler *advertise* recovery strategies and the handler *choose* one, without either side knowing about the other statically. This is the decoupling that makes the condition system powerful."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'use-value 99)))) (restart-case (error \"boom\") (use-value (v) v)))",
+      "expected": "99",
+      "explain": "RESTART-CASE establishes a restart named USE-VALUE. The handler picks it with argument 99. That becomes the value of the RESTART-CASE."
+    },
+    {
+      "kind": "example",
+      "code": "(restart-case (+ 1 2) (use-value (v) v))",
+      "expected": "3",
+      "explain": "When the protected form completes normally, RESTART-CASE returns its value. The restart is unused."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart (find-restart 'retry))))) (let ((tries 0)) (restart-case (progn (incf tries) (when (< tries 3) (error \"nope\")) tries) (retry () (if (< tries 3) (error \"nope\") tries)))))",
+      "expected": "3",
+      "explain": "A retry restart that re-raises until tries reaches 3. FIND-RESTART confirms it exists before INVOKE-RESTART calls it."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define PARSE-OR-DEFAULT that takes a string S and a default D. It should attempt (parse-integer S). If PARSE-INTEGER signals an error, a handler should invoke a USE-VALUE restart supplying D. Structure it as HANDLER-BIND + RESTART-CASE.",
+      "starter": "(defun parse-or-default (s d)\n  )",
+      "hint": "(handler-bind ((error (lambda (c) (declare (ignore c)) (invoke-restart 'use-value d)))) (restart-case (parse-integer s) (use-value (v) v))).",
+      "tests": [
+        { "call": "(parse-or-default \"42\" 0)", "equals": "42" },
+        { "call": "(parse-or-default \"not a number\" 0)", "equals": "0" },
+        { "call": "(parse-or-default \"xyz\" -1)", "equals": "-1" }
+      ]
+    }
+  ]
+}

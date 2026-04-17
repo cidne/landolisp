@@ -1,0 +1,43 @@
+{
+  "id": "065-defpackage",
+  "title": "DEFPACKAGE Basics",
+  "track": "packages",
+  "order": 65,
+  "estimatedMinutes": 12,
+  "prerequisites": ["064-symbols-recap"],
+  "completionSymbols": ["defpackage", "in-package", ":use", ":export", ":import-from", ":shadow", "find-package", "package-name"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DEFPACKAGE Basics\n\nA **package** is a namespace of symbols. `defpackage` creates one (or updates one) and declares its relationships to other packages.\n\n```lisp\n(defpackage #:my-app\n  (:use #:common-lisp #:alexandria)\n  (:export #:start #:stop)\n  (:import-from #:cl-ppcre #:scan #:register-groups-bind)\n  (:shadow #:count))\n```\n\nThe options:\n\n* `:use` — packages whose **exported** symbols are made directly visible inside this package. Almost every package uses `#:common-lisp` (a.k.a. `#:cl`) so you can write `defun` instead of `cl:defun`.\n* `:export` — symbols this package promises as its public API. Other packages can refer to them as `my-app:start`.\n* `:import-from` — pull specific symbols from another package directly into this one (without `:use`'ing all of it).\n* `:shadow` — declare that *our* symbol of this name takes precedence over any same-named symbol that would otherwise be inherited via `:use`. Without this, the import collision is an error.\n\nName designators can be strings (`\"MY-APP\"`), symbols (`'my-app`), or — by convention — *uninterned* symbols (`#:my-app`). The uninterned form is preferred so that loading the file doesn't pollute the current package with a stray `MY-APP` symbol."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:demo (:use #:cl) (:export #:greet)) (package-name (find-package \"DEMO\")))",
+      "expected": "\"DEMO\"",
+      "explain": "The package now exists. Its name is the upper-cased string DEMO."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:demo2 (:use #:cl) (:export #:greet)) (length (package-use-list (find-package \"DEMO2\"))))",
+      "expected": "1",
+      "explain": "DEMO2 uses one package: COMMON-LISP."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defpackage #:nouse) (length (package-use-list (find-package \"NOUSE\"))))",
+      "expected": "0",
+      "explain": "Omitting :USE gives a package that inherits NOTHING — not even DEFUN. Rarely what you want, but legal."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a package named \"MY-MATH\" that uses CL and exports a symbol SQUARE. Then evaluate (length (package-shadowing-symbols (find-package \"MY-MATH\"))) — your test will check this returns 0 (no shadowing).",
+      "starter": "(defpackage #:my-math\n  )\n",
+      "hint": "(defpackage #:my-math (:use #:cl) (:export #:square)).",
+      "tests": [
+        { "call": "(progn (find-package \"MY-MATH\") (length (package-shadowing-symbols (find-package \"MY-MATH\"))))", "equals": "0" },
+        { "call": "(package-name (find-package \"MY-MATH\"))", "equals": "\"MY-MATH\"" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "056-condition-system",
+  "title": "The Condition System: Signaling vs Handling",
+  "track": "conditions",
+  "order": 56,
+  "estimatedMinutes": 10,
+  "prerequisites": ["055-mop-teaser"],
+  "completionSymbols": ["condition", "signal", "error", "warn", "handler-case", "handler-bind", "restart-case", "invoke-restart"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# The Condition System: Signaling vs Handling\n\nMost languages give you exceptions: `throw` jumps somewhere, `catch` (or `try`) intercepts the jump. Common Lisp generalises this into a **condition system** with three independent moving parts:\n\n* **Signaling.** A piece of code announces \"something interesting happened\". The functions are `signal`, `warn`, `error`, `cerror`. *Signaling does not, by itself, unwind the stack.*\n* **Handling.** Code further up the stack registers a **handler** with `handler-case` (Java-style: catch + unwind) or `handler-bind` (the real CL way: run *while the stack is still live*).\n* **Restarts.** The signaling code can register named recovery strategies with `restart-case`. A handler — possibly far away — can choose one with `invoke-restart` and the program resumes from the *signal site*, not from the handler.\n\nThe last point is what makes Lisp's system unusual. In Java, by the time `catch` runs, every stack frame between `throw` and `catch` is gone. In Common Lisp, a handler can decide to invoke a restart, and computation resumes deep in the original call — the stack between is untouched. That's why you can develop interactively: a typo signals an error, the debugger lets you fix the binding and pick a `:continue` restart, and the program proceeds as if nothing happened.\n\nThis lesson is the map. The next eight unpack each piece."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (error \"oops\") (error (c) (format nil \"caught: ~a\" c)))",
+      "expected": "\"caught: oops\"",
+      "explain": "ERROR signals; HANDLER-CASE catches and unwinds. The handler returns the formatted string."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (progn (warn \"careful\") :ok) (warning (c) (declare (ignore c)) :got-warning))",
+      "expected": ":GOT-WARNING",
+      "explain": "WARN signals a WARNING. With a handler bound, control transfers to the handler instead of the warning being printed."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-case (signal 'simple-condition :format-control \"hi\") (condition (c) (declare (ignore c)) :handled))",
+      "expected": ":HANDLED",
+      "explain": "SIGNAL is the generic primitive. With a matching handler, it transfers control; without one, SIGNAL just returns NIL."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Write SAFE-CALL that takes a thunk (a function of no arguments). Call it; if it signals an ERROR, return the symbol :FAIL, otherwise return the thunk's value.",
+      "starter": "(defun safe-call (thunk)\n  )",
+      "hint": "(handler-case (funcall thunk) (error () :fail)).",
+      "tests": [
+        { "call": "(safe-call (lambda () (+ 1 2)))", "equals": "3" },
+        { "call": "(safe-call (lambda () (error \"boom\")))", "equals": ":FAIL" },
+        { "call": "(safe-call (lambda () (/ 1 0)))", "equals": ":FAIL" }
+      ]
+    }
+  ]
+}

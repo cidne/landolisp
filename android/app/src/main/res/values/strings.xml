@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Landolisp</string>
+    <string name="nav_lessons">Lessons</string>
+    <string name="nav_sandbox">Sandbox</string>
+    <string name="action_run">Run</string>
+    <string name="action_submit">Submit</string>
+    <string name="action_send">Send</string>
+    <string name="label_output">Output</string>
+    <string name="label_expected">Expected</string>
+    <string name="label_starter">Starter</string>
+    <string name="state_loading">Loading…</string>
+    <string name="state_empty_lessons">No lessons found. Run scripts/sync-curriculum.sh.</string>
+    <string name="error_generic">Something went wrong.</string>
+</resources>

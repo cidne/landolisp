@@ -1,0 +1,65 @@
+{
+  "id": "016-multiple-values",
+  "title": "Multiple Values",
+  "track": "functions",
+  "order": 16,
+  "estimatedMinutes": 10,
+  "prerequisites": ["015-closures"],
+  "completionSymbols": ["values", "multiple-value-bind", "multiple-value-list", "nth-value", "floor", "ceiling", "truncate", "round", "gethash"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Multiple Values\n\nA Common Lisp function can return **more than one value** without bundling them into a list.\n\n* `(values a b c)` — return three values. The first is the *primary* value.\n* `(multiple-value-bind (x y) form ... body)` — bind locals to each returned value.\n* `(multiple-value-list form)` — collect the values into a list.\n* `(nth-value n form)` — pluck the Nth value (0-indexed).\n\nMany built-ins return extra values: `floor` and friends return (quotient remainder); `gethash` returns (value present-p); `parse-integer` returns (n position).\n\nIn contexts that only use one value (e.g. as a function argument), extras are discarded; the primary becomes `NIL` if no values were returned."
+    },
+    {
+      "kind": "example",
+      "code": "(values 1 2 3)",
+      "expected": "1",
+      "explain": "The REPL prints all values, but the *primary* is 1. In most contexts only the primary is visible."
+    },
+    {
+      "kind": "example",
+      "code": "(multiple-value-list (values 1 2 3))",
+      "expected": "(1 2 3)",
+      "explain": "Collect all returned values into a list."
+    },
+    {
+      "kind": "example",
+      "code": "(multiple-value-bind (q r) (floor 17 5) (list q r))",
+      "expected": "(3 2)",
+      "explain": "FLOOR returns quotient and remainder; we bind both."
+    },
+    {
+      "kind": "example",
+      "code": "(nth-value 1 (floor 17 5))",
+      "expected": "2",
+      "explain": "Index 1 is the remainder."
+    },
+    {
+      "kind": "example",
+      "code": "(+ (values 10 99) 1)",
+      "expected": "11",
+      "explain": "In argument position only the primary value (10) is used."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define DIVMOD that returns two values: the quotient and remainder of A / B as integers.",
+      "starter": "(defun divmod (a b)\n  )",
+      "hint": "(values (floor a b) (mod a b)) — or use (floor a b) and capture both values via multiple-value-bind.",
+      "tests": [
+        { "call": "(multiple-value-list (divmod 17 5))", "equals": "(3 2)" },
+        { "call": "(multiple-value-list (divmod 20 4))", "equals": "(5 0)" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MIN-MAX that takes a non-empty list of numbers and returns two values: the smallest and the largest.",
+      "starter": "(defun min-max (xs)\n  )",
+      "hint": "(values (apply #'min xs) (apply #'max xs)).",
+      "tests": [
+        { "call": "(multiple-value-list (min-max '(3 1 4 1 5 9 2 6)))", "equals": "(1 9)" },
+        { "call": "(nth-value 0 (min-max '(5 5 5)))", "equals": "5" }
+      ]
+    }
+  ]
+}

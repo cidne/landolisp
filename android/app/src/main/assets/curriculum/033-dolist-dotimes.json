@@ -1,0 +1,60 @@
+{
+  "id": "033-dolist-dotimes",
+  "title": "DOLIST and DOTIMES",
+  "track": "controlflow",
+  "order": 33,
+  "estimatedMinutes": 8,
+  "prerequisites": ["032-do"],
+  "completionSymbols": ["dolist", "dotimes", "incf", "push", "nreverse", "list", "+"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# DOLIST and DOTIMES\n\nThese two macros cover the most common loops without the ceremony of `do`.\n\n`(dolist (var list-form [result-form]) body...)` binds `var` to each element of the list in turn:\n\n```lisp\n(dolist (x '(a b c))\n  (print x))    ; prints A B C, returns NIL\n```\n\n`(dotimes (var n [result-form]) body...)` binds `var` to 0, 1, ..., `n-1` in turn:\n\n```lisp\n(dotimes (i 3)\n  (print i))    ; prints 0 1 2, returns NIL\n```\n\nBoth return `NIL` by default, or the optional `result-form` (evaluated **after** the loop, with `var` bound to its final value: `nil` for dolist, `n` for dotimes).\n\nInside either loop, you can use `return` to jump out early — it's an implicit `block nil` (we'll meet `block` later)."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((sum 0)) (dolist (x '(1 2 3 4 5) sum) (incf sum x)))",
+      "expected": "15",
+      "explain": "Sum a list. The result form SUM runs after the loop, returning the final total."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((acc nil)) (dolist (x '(a b c) (nreverse acc)) (push x acc)))",
+      "expected": "(A B C)",
+      "explain": "Build a list by pushing then reversing — a common idiom."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((sum 0)) (dotimes (i 10 sum) (incf sum i)))",
+      "expected": "45",
+      "explain": "Sum 0+1+2+...+9 = 45."
+    },
+    {
+      "kind": "example",
+      "code": "(dotimes (i 5 i))",
+      "expected": "5",
+      "explain": "After the loop, i has the final value N (here 5), and that's what the result form returns."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SUM-LIST using DOLIST. Do not call REDUCE or APPLY.",
+      "starter": "(defun sum-list (xs)\n  )",
+      "tests": [
+        { "call": "(sum-list '(1 2 3 4 5))", "equals": "15" },
+        { "call": "(sum-list nil)", "equals": "0" },
+        { "call": "(sum-list '(10))", "equals": "10" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define RANGE that returns the list (0 1 2 ... N-1) using DOTIMES.",
+      "starter": "(defun range (n)\n  )",
+      "hint": "(let ((acc nil)) (dotimes (i n (nreverse acc)) (push i acc))).",
+      "tests": [
+        { "call": "(range 5)", "equals": "(0 1 2 3 4)" },
+        { "call": "(range 1)", "equals": "(0)" },
+        { "call": "(range 0)", "equals": "NIL" }
+      ]
+    }
+  ]
+}

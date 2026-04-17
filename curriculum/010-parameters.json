@@ -1,0 +1,75 @@
+{
+  "id": "010-parameters",
+  "title": "Parameters: &optional, &rest, &key",
+  "track": "functions",
+  "order": 10,
+  "estimatedMinutes": 12,
+  "prerequisites": ["009-defun"],
+  "completionSymbols": ["&optional", "&rest", "&key", "&aux", "&allow-other-keys", "defun", "list*", "values"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Parameters: &optional, &rest, &key\n\nA lambda list (parameter list) can be much richer than a flat list of names.\n\n* `&optional` — parameters that may be omitted. Each may have a default form: `(name default)`. Optionals after this marker stay positional.\n* `&rest` — collects all remaining positional arguments into a list.\n* `&key` — keyword arguments. Callers pass `:name value` pairs in any order. Defaults work like `&optional`.\n* `&allow-other-keys` — accept (and ignore) unknown keywords.\n\nA parameter spec like `(name default supplied-p)` adds a third variable that is `T` if the caller actually passed a value (useful to distinguish \"defaulted\" from \"explicitly nil\")."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun greet (name &optional (salutation \"Hello\")) (format nil \"~a, ~a!\" salutation name)) (greet \"Ada\"))",
+      "expected": "\"Hello, Ada!\"",
+      "explain": "SALUTATION defaults to \"Hello\" when omitted."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun greet (name &optional (salutation \"Hello\")) (format nil \"~a, ~a!\" salutation name)) (greet \"Ada\" \"Howdy\"))",
+      "expected": "\"Howdy, Ada!\"",
+      "explain": "Pass it positionally to override the default."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun sum-all (&rest nums) (apply #'+ nums)) (sum-all 1 2 3 4 5))",
+      "expected": "15",
+      "explain": "&REST collects everything into a list; APPLY then spreads it."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun connect (&key host (port 80)) (format nil \"~a:~a\" host port)) (connect :host \"example.com\"))",
+      "expected": "\"example.com:80\"",
+      "explain": "Keyword args are passed as :name value pairs in any order."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun connect (&key host (port 80)) (format nil \"~a:~a\" host port)) (connect :port 443 :host \"example.com\"))",
+      "expected": "\"example.com:443\"",
+      "explain": "Order doesn't matter for keyword arguments."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define POW that takes a base and an &optional exponent (default 2). Return base raised to exponent.",
+      "starter": "(defun pow (base &optional (exp 2))\n  )",
+      "tests": [
+        { "call": "(pow 5)", "equals": "25" },
+        { "call": "(pow 2 10)", "equals": "1024" },
+        { "call": "(pow 3 3)", "equals": "27" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAX-OF that takes any number of integers via &rest and returns the largest. Assume at least one argument.",
+      "starter": "(defun max-of (&rest xs)\n  )",
+      "hint": "(apply #'max xs).",
+      "tests": [
+        { "call": "(max-of 1)", "equals": "1" },
+        { "call": "(max-of 3 1 4 1 5 9 2 6)", "equals": "9" },
+        { "call": "(max-of -10 -20 -5)", "equals": "-5" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAKE-URL that takes a :host and an :optional :port (default 80) and returns the string \"host:port\".",
+      "starter": "(defun make-url (&key host (port 80))\n  )",
+      "tests": [
+        { "call": "(make-url :host \"a.com\")", "equals": "\"a.com:80\"" },
+        { "call": "(make-url :host \"b.org\" :port 443)", "equals": "\"b.org:443\"" }
+      ]
+    }
+  ]
+}

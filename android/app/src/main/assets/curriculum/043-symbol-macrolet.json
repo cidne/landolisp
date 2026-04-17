@@ -1,0 +1,43 @@
+{
+  "id": "043-symbol-macrolet",
+  "title": "Symbol Macros: SYMBOL-MACROLET",
+  "track": "macros",
+  "order": 43,
+  "estimatedMinutes": 9,
+  "prerequisites": ["042-compiler-macros"],
+  "completionSymbols": ["symbol-macrolet", "define-symbol-macro", "let", "defstruct", "incf", "setf", "aref"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Symbol Macros: SYMBOL-MACROLET\n\nA **symbol macro** is a macro that triggers when the compiler sees a *bare symbol*, not a call form. Wherever the symbol appears, the compiler substitutes its expansion.\n\n```lisp\n(symbol-macrolet ((x (aref arr 5)))\n  (incf x)         ; same as (incf (aref arr 5))\n  x)               ; same as (aref arr 5)\n```\n\n`symbol-macrolet` is **lexical** — only inside its body does `x` mean the array reference.\n\n`define-symbol-macro` installs a global symbol macro, but it's used sparingly because it surprises readers.\n\nThe most common appearance: `with-slots` (CLOS, coming up in track 6) is *implemented* using `symbol-macrolet` so that a slot reference looks like a plain variable while actually expanding to `(slot-value obj 'slot-name)`. Same for `with-accessors`.\n\nThe expansion is a *form*, not a value, so it works as a `setf` place too — that's why `(incf x)` above is legal: it expands to `(incf (aref arr 5))`."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((arr (make-array 3 :initial-element 0))) (symbol-macrolet ((mid (aref arr 1))) (setf mid 42) mid))",
+      "expected": "42",
+      "explain": "MID expands to (AREF ARR 1) every time. SETF on the symbol-macro is SETF on the underlying place."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((cell (cons 0 nil))) (symbol-macrolet ((c (car cell))) (incf c) (incf c) (incf c) c))",
+      "expected": "3",
+      "explain": "Three (incf c) calls become three (incf (car cell)) calls."
+    },
+    {
+      "kind": "example",
+      "code": "(symbol-macrolet ((forty-two (* 6 7))) forty-two)",
+      "expected": "42",
+      "explain": "Symbol macros aren't restricted to places — they can hide a computation behind a name."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Using SYMBOL-MACROLET, write a function-style block that creates a 3-element vector V (initial 0), introduces the symbol macros A, B, C standing for (aref v 0), (aref v 1), (aref v 2), then sets A=10, B=20, C=30, and returns the vector. The body should LOOK like assignments to plain variables.",
+      "starter": "(defun build-vec ()\n  )",
+      "hint": "(let ((v (make-array 3 :initial-element 0))) (symbol-macrolet ((a (aref v 0)) (b (aref v 1)) (c (aref v 2))) (setf a 10 b 20 c 30) v)).",
+      "tests": [
+        { "call": "(build-vec)", "equals": "#(10 20 30)" },
+        { "call": "(aref (build-vec) 1)", "equals": "20" }
+      ]
+    }
+  ]
+}

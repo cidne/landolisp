@@ -1,0 +1,56 @@
+{
+  "id": "080-cl-ppcre",
+  "title": "CL-PPCRE: Perl-Compatible Regex",
+  "track": "libraries",
+  "order": 80,
+  "estimatedMinutes": 12,
+  "prerequisites": ["079-serapeum"],
+  "completionSymbols": ["ql:quickload", "cl-ppcre:scan", "cl-ppcre:scan-to-strings", "cl-ppcre:all-matches-as-strings", "cl-ppcre:split", "cl-ppcre:regex-replace", "cl-ppcre:regex-replace-all"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# CL-PPCRE: Perl-Compatible Regex\n\nCommon Lisp has no built-in regex. CL-PPCRE (\"Portable Perl Compatible Regular Expressions\") is the standard answer. It's pure Lisp, fast, and supports the full Perl 5 syntax.\n\nThe core surface:\n\n* `(cl-ppcre:scan REGEX STRING)` — return four values: match-start, match-end, register-starts vector, register-ends vector. Returns `NIL` on no match.\n* `(cl-ppcre:scan-to-strings REGEX STRING)` — high-level: returns the whole match as a string and a vector of capture-group strings.\n* `(cl-ppcre:all-matches-as-strings REGEX STRING)` — list of every non-overlapping match.\n* `(cl-ppcre:split REGEX STRING)` — split on regex.\n* `(cl-ppcre:regex-replace REGEX STRING REPLACEMENT)` — replace first match.\n* `(cl-ppcre:regex-replace-all REGEX STRING REPLACEMENT)` — replace every match.\n\nThe `REPLACEMENT` argument can be a string (with `\\1`, `\\2` for back-references) or a function called with the matched portion."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :cl-ppcre)",
+      "expected": "(:CL-PPCRE)",
+      "explain": "Load CL-PPCRE."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-ppcre:all-matches-as-strings \"\\\\d+\" \"abc 12 def 345 ghi\")",
+      "expected": "(\"12\" \"345\")",
+      "explain": "Find every run of digits. Note the doubled backslash in the string literal: \\\\d in source is \\d in the regex."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-ppcre:split \",\\\\s*\" \"a, b,c,  d\")",
+      "expected": "(\"a\" \"b\" \"c\" \"d\")",
+      "explain": "Split on a comma followed by any whitespace. SPLIT returns a list of substrings."
+    },
+    {
+      "kind": "example",
+      "code": "(cl-ppcre:regex-replace-all \"\\\\s+\" \"hello   world  again\" \"_\")",
+      "expected": "\"hello_world_again\"",
+      "explain": "Collapse runs of whitespace to underscores."
+    },
+    {
+      "kind": "example",
+      "code": "(multiple-value-bind (whole groups) (cl-ppcre:scan-to-strings \"(\\\\w+)@(\\\\w+)\" \"a@b foo bar\") (list whole (aref groups 0) (aref groups 1)))",
+      "expected": "(\"a@b\" \"a\" \"b\")",
+      "explain": "SCAN-TO-STRINGS returns the whole match and a vector of capture groups. We pull both out."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-DIGITS (S) returning the number of digit-runs in S using CL-PPCRE:ALL-MATCHES-AS-STRINGS.",
+      "starter": "(defun count-digits (s)\n  )",
+      "hint": "(length (cl-ppcre:all-matches-as-strings \"\\\\d+\" s)).",
+      "tests": [
+        { "call": "(count-digits \"abc\")", "equals": "0" },
+        { "call": "(count-digits \"abc 12 def\")", "equals": "1" },
+        { "call": "(count-digits \"1 22 333 4444\")", "equals": "4" }
+      ]
+    }
+  ]
+}

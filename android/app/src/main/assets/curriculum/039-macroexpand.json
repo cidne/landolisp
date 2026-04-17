@@ -1,0 +1,50 @@
+{
+  "id": "039-macroexpand",
+  "title": "MACROEXPAND and the Hygiene Problem",
+  "track": "macros",
+  "order": 39,
+  "estimatedMinutes": 11,
+  "prerequisites": ["038-defmacro"],
+  "completionSymbols": ["macroexpand", "macroexpand-1", "defmacro", "let", "incf", "format"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# MACROEXPAND and the Hygiene Problem\n\nTwo built-ins let you see what your macros produce:\n\n* `(macroexpand-1 form)` expands the *outermost* macro one step.\n* `(macroexpand form)` expands repeatedly until the result is no longer a macro form.\n\nBoth return **two values**: the expanded form and `T` if anything was expanded (`NIL` otherwise). When you eyeball the expansion, you usually only care about the primary value.\n\n```lisp\n(macroexpand-1 '(my-when t 1 2))\n;; => (IF T (PROGN 1 2) NIL) ; T\n```\n\nUnlike Scheme, Common Lisp macros are **not hygienic** — the symbols you write in a template are inserted *literally* into the expansion. That means a name you used as a temporary inside the macro can collide with a variable the user happens to be using at the call site.\n\n```lisp\n(defmacro twice (form)\n  `(let ((tmp ,form))\n     (list tmp tmp)))\n\n(let ((tmp 99)) (twice (incf tmp)))   ; surprises ahead!\n```\n\nThe macro binds its own `TMP`, which **shadows** the user's `TMP` mid-expansion — and worse, `(incf tmp)` inside the body refers to *whichever* `TMP` the expanded code sees.\n\nThe fix is `gensym` (next lesson)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro my-when (test &body body) `(if ,test (progn ,@body) nil)) (macroexpand-1 '(my-when (> x 0) (print x))))",
+      "expected": "(IF (> X 0) (PROGN (PRINT X)) NIL)",
+      "explain": "The expansion is just data — a list. The second value (T) isn't shown because we only kept the primary value."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro double (x) `(* 2 ,x)) (macroexpand-1 '(double (+ 3 4))))",
+      "expected": "(* 2 (+ 3 4))",
+      "explain": "Notice (+ 3 4) is NOT pre-evaluated. Macros work on raw source."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro twice (form) `(let ((tmp ,form)) (list tmp tmp))) (macroexpand-1 '(twice 42)))",
+      "expected": "(LET ((TMP 42)) (LIST TMP TMP))",
+      "explain": "The TMP in the expansion is the literal symbol TMP — same one the user might already be using."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro twice (form) `(let ((tmp ,form)) (list tmp tmp))) (let ((tmp 0)) (twice (incf tmp))))",
+      "expected": "(1 1)",
+      "explain": "Capture in action: the macro's TMP shadows the user's TMP in the body of the LET, so (incf tmp) bumps the macro's local. The user's TMP is left at 0."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a macro QUOTED-LIST whose call (quoted-list a b c) returns the list (A B C), with each argument symbol-quoted in the expansion (so the symbols are NOT evaluated as variable references).",
+      "starter": "(defmacro quoted-list (&rest xs)\n  )",
+      "hint": "`(list ,@(mapcar (lambda (x) `(quote ,x)) xs)). Each X becomes (QUOTE X), and the splice puts them in a (LIST ...) call.",
+      "tests": [
+        { "call": "(quoted-list a b c)", "equals": "(A B C)" },
+        { "call": "(quoted-list)", "equals": "NIL" },
+        { "call": "(quoted-list x)", "equals": "(X)" }
+      ]
+    }
+  ]
+}

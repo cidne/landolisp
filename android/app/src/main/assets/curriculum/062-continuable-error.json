@@ -1,0 +1,44 @@
+{
+  "id": "062-continuable-error",
+  "title": "The Continuable-Error Pattern: CERROR + Restart",
+  "track": "conditions",
+  "order": 62,
+  "estimatedMinutes": 12,
+  "prerequisites": ["061-define-condition"],
+  "completionSymbols": ["cerror", "restart-case", "handler-bind", "invoke-restart", "continue", "find-restart", "define-condition"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# The Continuable-Error Pattern: CERROR + Restart\n\nSometimes a library wants to say \"this is a problem, but if you insist, I can keep going.\" That is exactly what `cerror` + the `continue` restart model. `cerror` establishes an implicit `continue` restart: if a handler invokes it, `cerror` returns `NIL` and execution resumes.\n\nA richer pattern pairs a **custom condition** with an explicit `restart-case` that offers more than one recovery:\n\n```lisp\n(define-condition stale-cache (error) ((key :initarg :key :reader stale-cache-key)))\n\n(defun fetch (key)\n  (restart-case (error 'stale-cache :key key)\n    (use-value (v) v)        ; \"pretend the value was V\"\n    (retry    ()   (fetch key))   ; \"try again\"\n    (skip     ()   nil)))    ; \"give up, return NIL\"\n```\n\nA handler can inspect `(find-restart 'use-value)` and `(find-restart 'skip)` and choose a strategy appropriate to its context.\n\nThe elegance: `fetch` doesn't know what policy the caller wants. Different callers install different handlers, and the same `fetch` participates in all of them. That's the protocol-over-data decoupling the condition system was designed for."
+    },
+    {
+      "kind": "example",
+      "code": "(handler-bind ((error (lambda (c) (declare (ignore c)) (when (find-restart 'continue) (invoke-restart 'continue))))) (progn (cerror \"keep going\" \"problem\") :done))",
+      "expected": ":DONE",
+      "explain": "CERROR signals. The handler picks the implicit CONTINUE restart. CERROR returns NIL, PROGN returns :DONE."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition stale (error) ((key :initarg :key :reader stale-key))) (handler-bind ((stale (lambda (c) (declare (ignore c)) (invoke-restart 'use-value 42)))) (restart-case (error 'stale :key :foo) (use-value (v) v))))",
+      "expected": "42",
+      "explain": "Custom condition + USE-VALUE restart. Handler picks the restart, supplying 42, which becomes the RESTART-CASE's value."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (define-condition stale (error) ((key :initarg :key :reader stale-key))) (handler-bind ((stale (lambda (c) (declare (ignore c)) (invoke-restart 'skip)))) (restart-case (error 'stale :key :bar) (use-value (v) v) (skip () :skipped))))",
+      "expected": ":SKIPPED",
+      "explain": "Two restarts are advertised; the handler chooses SKIP. The RESTART-CASE's value is :SKIPPED."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SAFE-ISQRT (N) that returns (isqrt n) (integer square root), except: if N is negative, it must SIGNAL (via ERROR) a condition of class NEGATIVE-SQRT (which you also define, inheriting from ERROR, with one slot VALUE and reader NEGATIVE-SQRT-VALUE), and offer two restarts: USE-VALUE (v) and USE-ABS (). A handler that chooses USE-ABS should get (isqrt (abs n)); USE-VALUE should get the supplied v.",
+      "starter": "(define-condition negative-sqrt (error)\n  ((value :initarg :value :reader negative-sqrt-value)))\n\n(defun safe-isqrt (n)\n  )",
+      "hint": "(if (minusp n) (restart-case (error 'negative-sqrt :value n) (use-value (v) v) (use-abs () (isqrt (abs n)))) (isqrt n)).",
+      "tests": [
+        { "call": "(safe-isqrt 9)", "equals": "3" },
+        { "call": "(handler-bind ((negative-sqrt (lambda (c) (declare (ignore c)) (invoke-restart 'use-abs)))) (safe-isqrt -16))", "equals": "4" },
+        { "call": "(handler-bind ((negative-sqrt (lambda (c) (declare (ignore c)) (invoke-restart 'use-value :nan)))) (safe-isqrt -1))", "equals": ":NAN" }
+      ]
+    }
+  ]
+}

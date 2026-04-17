@@ -1,0 +1,69 @@
+{
+  "id": "028-case",
+  "title": "Dispatching on a Key: CASE, ECASE, TYPECASE",
+  "track": "controlflow",
+  "order": 28,
+  "estimatedMinutes": 10,
+  "prerequisites": ["027-cond"],
+  "completionSymbols": ["case", "ecase", "ccase", "typecase", "etypecase", "otherwise", "t", "integer", "string", "symbol"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Dispatching on a Key: CASE, ECASE, TYPECASE\n\nWhen you're branching on a single value, `case` is more readable than `cond`:\n\n```lisp\n(case key\n  (key1     body1...)\n  ((k2 k3)  body23...)\n  (otherwise default...))\n```\n\nKeys are compared with `eql`, so this is great for symbols, characters, and small integers — **not** strings (use `cond` with `string=` for those).\n\nA list of keys in a clause means \"match any of these\". The catch-all is `otherwise` (or `t`). If you list `nil` or `t` as a *key*, wrap it in a list: `((nil) ...)` — otherwise it would look like the otherwise marker.\n\n* `ecase` (\"exhaustive case\") signals an error if no clause matches. Use it when you've enumerated every possibility and want a loud failure if a new one shows up.\n* `ccase` is like `ecase` but offers a continuable restart.\n* `typecase` dispatches on the *type* of the key instead of equality. `etypecase` is the exhaustive variant."
+    },
+    {
+      "kind": "example",
+      "code": "(case 'b ((a) 1) ((b) 2) ((c) 3))",
+      "expected": "2",
+      "explain": "Match on the symbol B."
+    },
+    {
+      "kind": "example",
+      "code": "(case 5 ((1 2 3) :small) ((4 5 6) :medium) (otherwise :big))",
+      "expected": ":MEDIUM",
+      "explain": "5 is in the second clause's key list."
+    },
+    {
+      "kind": "example",
+      "code": "(case 'zzz ((a) 1) ((b) 2))",
+      "expected": "NIL",
+      "explain": "No match and no OTHERWISE — CASE returns NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(typecase 42 (string :str) (integer :int) (t :other))",
+      "expected": ":INT",
+      "explain": "42 is an integer; the second clause matches."
+    },
+    {
+      "kind": "example",
+      "code": "(typecase \"hi\" (integer :int) (string :str) (t :other))",
+      "expected": ":STR",
+      "explain": "TYPECASE walks clauses top to bottom and matches the first one whose type the key satisfies."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define DAY-KIND that returns :WEEKEND for :SAT or :SUN, otherwise :WEEKDAY.",
+      "starter": "(defun day-kind (day)\n  )",
+      "hint": "(case day ((:sat :sun) :weekend) (otherwise :weekday)).",
+      "tests": [
+        { "call": "(day-kind :sat)", "equals": ":WEEKEND" },
+        { "call": "(day-kind :sun)", "equals": ":WEEKEND" },
+        { "call": "(day-kind :mon)", "equals": ":WEEKDAY" },
+        { "call": "(day-kind :wed)", "equals": ":WEEKDAY" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define KIND-OF that uses TYPECASE to return :NUMBER, :STRING, :LIST, :SYMBOL, or :OTHER.",
+      "starter": "(defun kind-of (x)\n  )",
+      "tests": [
+        { "call": "(kind-of 7)", "equals": ":NUMBER" },
+        { "call": "(kind-of \"hi\")", "equals": ":STRING" },
+        { "call": "(kind-of '(1 2))", "equals": ":LIST" },
+        { "call": "(kind-of 'foo)", "equals": ":SYMBOL" },
+        { "call": "(kind-of #\\a)", "equals": ":OTHER" }
+      ]
+    }
+  ]
+}

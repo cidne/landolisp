@@ -1,0 +1,38 @@
+{
+  "id": "053-eql-specializers",
+  "title": "EQL Specializers",
+  "track": "clos",
+  "order": 53,
+  "estimatedMinutes": 9,
+  "prerequisites": ["052-multiple-dispatch"],
+  "completionSymbols": ["defmethod", "defgeneric", "eql", "make-instance", "+", "*"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# EQL Specializers\n\nMost specialisers are class names. The other shape is `(eql object)` — a method that applies only when the corresponding argument is `eql` to that exact object.\n\n```lisp\n(defgeneric handle (cmd))\n(defmethod handle ((cmd (eql :start))) :starting)\n(defmethod handle ((cmd (eql :stop)))  :stopping)\n(defmethod handle (cmd)                 :unknown)\n```\n\nThe `(eql ...)` form is a *specialiser*, not a function call — that object is captured at `defmethod` time and used as the dispatch key. EQL specializers are the idiomatic way to dispatch on specific symbols, characters, or small numbers.\n\nThey play nicely with class specializers: you can have `(defmethod f ((x integer) (y (eql 0))))` for special-casing 'when y is exactly zero', falling back to the integer/integer method otherwise.\n\nGotcha: an EQL specializer is more specific than any class specializer it could otherwise match — `((cmd (eql :start)))` beats `((cmd symbol))`."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defgeneric handle (cmd)) (defmethod handle ((cmd (eql :start))) :starting) (defmethod handle ((cmd (eql :stop))) :stopping) (defmethod handle (cmd) :unknown) (list (handle :start) (handle :stop) (handle :other)))",
+      "expected": "(:STARTING :STOPPING :UNKNOWN)",
+      "explain": "EQL methods catch the exact symbols; the catch-all method handles anything else."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defgeneric pow (base exp)) (defmethod pow ((base integer) (exp integer)) (expt base exp)) (defmethod pow ((base integer) (exp (eql 0))) 1) (defmethod pow ((base integer) (exp (eql 1))) base) (list (pow 7 0) (pow 7 1) (pow 2 10)))",
+      "expected": "(1 7 1024)",
+      "explain": "EQL specializers on EXP take precedence over the general INTEGER/INTEGER method when the exponent is exactly 0 or 1."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a generic function STEP-WORD that maps the symbol :ROCK to :PAPER, :PAPER to :SCISSORS, :SCISSORS to :ROCK, anything else to :UNKNOWN. Use EQL specializers.",
+      "starter": "(defgeneric step-word (s))\n",
+      "tests": [
+        { "call": "(step-word :rock)", "equals": ":PAPER" },
+        { "call": "(step-word :paper)", "equals": ":SCISSORS" },
+        { "call": "(step-word :scissors)", "equals": ":ROCK" },
+        { "call": "(step-word :wat)", "equals": ":UNKNOWN" }
+      ]
+    }
+  ]
+}

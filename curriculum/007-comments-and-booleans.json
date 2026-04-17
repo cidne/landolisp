@@ -1,0 +1,80 @@
+{
+  "id": "007-comments-and-booleans",
+  "title": "Comments, Booleans, and NIL",
+  "track": "fundamentals",
+  "order": 7,
+  "estimatedMinutes": 8,
+  "prerequisites": ["004-symbols"],
+  "completionSymbols": ["t", "nil", "and", "or", "not", "if", "when", "unless", "null", "endp"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Comments, Booleans, and NIL\n\n## Comments\n\n* `;`  — line comment, to end of line.\n* `;;` — inside functions, by convention indented like code.\n* `;;;` — top-level / between definitions.\n* `#| ... |#` — block comment (nestable).\n\n## Booleans\n\nThere is no separate boolean type. The rule is simple: **`nil` is false; everything else is true**. The canonical true value is `t`.\n\n* `nil` is also the empty list `()`. They are the same object.\n* Predicates conventionally end in `p` (e.g. `numberp`, `null`).\n* `and`, `or` short-circuit and return useful values:\n  * `(and ...)` returns the first falsy value or the last value.\n  * `(or ...)`  returns the first truthy value or the last value.\n* `not` and `null` are synonyms — both return `t` for `nil` and `nil` otherwise."
+    },
+    {
+      "kind": "example",
+      "code": "(if 0 'truthy 'falsy)",
+      "expected": "TRUTHY",
+      "explain": "Zero is NOT false in Lisp. Only NIL is."
+    },
+    {
+      "kind": "example",
+      "code": "(null nil)",
+      "expected": "T",
+      "explain": "NULL recognises NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(null '())",
+      "expected": "T",
+      "explain": "Empty list and NIL are the same object."
+    },
+    {
+      "kind": "example",
+      "code": "(and 1 2 3)",
+      "expected": "3",
+      "explain": "All truthy — AND returns the last value."
+    },
+    {
+      "kind": "example",
+      "code": "(and 1 nil 3)",
+      "expected": "NIL",
+      "explain": "Short-circuits at NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(or nil nil 'found nil)",
+      "expected": "FOUND",
+      "explain": "OR returns the first non-NIL value."
+    },
+    {
+      "kind": "example",
+      "code": "(not nil)",
+      "expected": "T",
+      "explain": "NOT inverts truthiness."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define EMPTYP that returns T if its argument is NIL or the empty list, NIL otherwise.",
+      "starter": "(defun emptyp (x)\n  )",
+      "tests": [
+        { "call": "(emptyp nil)", "equals": "T" },
+        { "call": "(emptyp '())", "equals": "T" },
+        { "call": "(emptyp '(1))", "equals": "NIL" },
+        { "call": "(emptyp 0)", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define BOTH-TRUTHY that returns T iff both arguments are non-NIL, otherwise NIL. Do NOT just return the AND result — coerce to T/NIL.",
+      "starter": "(defun both-truthy (a b)\n  )",
+      "hint": "(if (and a b) t nil) coerces.",
+      "tests": [
+        { "call": "(both-truthy 1 2)", "equals": "T" },
+        { "call": "(both-truthy 1 nil)", "equals": "NIL" },
+        { "call": "(both-truthy nil 5)", "equals": "NIL" },
+        { "call": "(both-truthy nil nil)", "equals": "NIL" }
+      ]
+    }
+  ]
+}

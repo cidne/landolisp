@@ -1,0 +1,65 @@
+{
+  "id": "024-structs",
+  "title": "Structures with DEFSTRUCT",
+  "track": "data",
+  "order": 24,
+  "estimatedMinutes": 12,
+  "prerequisites": ["023-hash-tables"],
+  "completionSymbols": ["defstruct", "make-point", "copy-structure", "slot-value", "typep", "defparameter", "setf"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Structures with DEFSTRUCT\n\n`defstruct` defines a lightweight record type. A single form generates:\n\n* a constructor `MAKE-<name>` (keyword-based),\n* a recogniser `<name>-P`,\n* an accessor `<name>-<slot>` for each slot,\n* a copier `COPY-<name>`.\n\n```lisp\n(defstruct point x y)\n\n(defparameter *p* (make-point :x 3 :y 4))\n(point-x *p*)         ; => 3\n(setf (point-y *p*) 99)\n```\n\nSlots may have defaults: `(defstruct person (name \"\") (age 0))`. `defstruct` also supports `:include`, `:type`, and `:conc-name` for more advanced shapes, but the simple form is the daily bread."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defstruct point x y) (make-point :x 3 :y 4))",
+      "expected": "#S(POINT :X 3 :Y 4)",
+      "explain": "Default printed representation uses #S read syntax."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defstruct point x y) (point-x (make-point :x 3 :y 4)))",
+      "expected": "3",
+      "explain": "Accessor named TYPENAME-SLOTNAME."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defstruct point x y) (point-p (make-point :x 0 :y 0)))",
+      "expected": "T",
+      "explain": "The auto-generated type predicate."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defstruct point x y) (let ((p (make-point :x 1 :y 2))) (setf (point-x p) 99) (point-x p)))",
+      "expected": "99",
+      "explain": "Slots are places: (SETF (ACCESSOR OBJ) VAL) mutates."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defstruct (person (:conc-name p-)) name age) (p-name (make-person :name \"Ada\" :age 36)))",
+      "expected": "\"Ada\"",
+      "explain": ":conc-name chooses a different prefix for accessors."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a struct BOOK with slots TITLE and AUTHOR, then define MAKE-BOOK-SUMMARY that returns the string \"TITLE by AUTHOR\" for a given book.",
+      "starter": "(defstruct book title author)\n\n(defun make-book-summary (b)\n  )",
+      "hint": "(format nil \"~a by ~a\" (book-title b) (book-author b)).",
+      "tests": [
+        { "call": "(make-book-summary (make-book :title \"SICP\" :author \"Sussman\"))", "equals": "\"SICP by Sussman\"" },
+        { "call": "(make-book-summary (make-book :title \"On Lisp\" :author \"Graham\"))", "equals": "\"On Lisp by Graham\"" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a struct VEC3 with slots X, Y, Z (defaults 0). Define VEC3-SUM that returns X+Y+Z.",
+      "starter": "(defstruct vec3 (x 0) (y 0) (z 0))\n\n(defun vec3-sum (v)\n  )",
+      "tests": [
+        { "call": "(vec3-sum (make-vec3))", "equals": "0" },
+        { "call": "(vec3-sum (make-vec3 :x 1 :y 2 :z 3))", "equals": "6" },
+        { "call": "(vec3-sum (make-vec3 :y 10))", "equals": "10" }
+      ]
+    }
+  ]
+}

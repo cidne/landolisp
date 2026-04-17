@@ -1,0 +1,43 @@
+{
+  "id": "075-load-system-vs-quickload",
+  "title": "LOAD-SYSTEM vs QUICKLOAD",
+  "track": "system",
+  "order": 75,
+  "estimatedMinutes": 8,
+  "prerequisites": ["074-search-path"],
+  "completionSymbols": ["asdf:load-system", "asdf:test-system", "ql:quickload", "ql:system-apropos", "asdf:compile-system", "asdf:find-system", "asdf:already-loaded-systems"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# LOAD-SYSTEM vs QUICKLOAD\n\nBoth load a system. The differences are about **discovery** and **dependency resolution**.\n\n`(asdf:load-system :foo)`:\n\n* Looks for `foo.asd` via `*central-registry*` and the source registry.\n* Loads `foo` and everything in its `:depends-on`.\n* If a dependency isn't on disk, you get `system-not-found`. ASDF doesn't fetch anything.\n* Returns `T` on success.\n\n`(ql:quickload :foo)`:\n\n* First checks Quicklisp's index for `foo`. If found and not yet present locally, **downloads** it (and dependencies) into `~/quicklisp/dists/`.\n* Then delegates to ASDF to load.\n* Returns the list `(:foo)` on success — the systems requested.\n\nFor a system **you** wrote and have on disk, either works once ASDF can find the `.asd`. For a third-party library, `quickload` is what fetches it the first time. After the fetch, `load-system` works equally well.\n\nA few helpers:\n\n* `(ql:system-apropos \"http\")` — search Quicklisp's index by name.\n* `(asdf:test-system :foo)` — runs the test op (lesson 076).\n* `(asdf:already-loaded-systems)` — returns a list of loaded system names; useful for poking around."
+    },
+    {
+      "kind": "example",
+      "code": "(listp (asdf:already-loaded-systems))",
+      "expected": "T",
+      "explain": "ALREADY-LOADED-SYSTEMS returns a list (of strings)."
+    },
+    {
+      "kind": "example",
+      "code": "(every #'stringp (asdf:already-loaded-systems))",
+      "expected": "T",
+      "explain": "Each element is a system name as a string."
+    },
+    {
+      "kind": "example",
+      "code": "(if (find-package :ql) :quicklisp-here :no-quicklisp)",
+      "expected": ":QUICKLISP-HERE",
+      "explain": "The sandbox has Quicklisp installed; the QL package exists. In a bare SBCL it wouldn't."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define LOADED-P (NAME) returning T iff system NAME (a string) appears in ASDF:ALREADY-LOADED-SYSTEMS (case-insensitive compare).",
+      "starter": "(defun loaded-p (name)\n  )",
+      "hint": "(and (member name (asdf:already-loaded-systems) :test #'string-equal) t).",
+      "tests": [
+        { "call": "(loaded-p \"asdf\")", "equals": "T" },
+        { "call": "(loaded-p \"absolutely-not-a-real-system-12345\")", "equals": "NIL" }
+      ]
+    }
+  ]
+}

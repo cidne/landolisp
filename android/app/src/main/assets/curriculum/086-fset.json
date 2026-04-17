@@ -1,0 +1,56 @@
+{
+  "id": "086-fset",
+  "title": "FSet: Functional Sets, Maps, and Sequences",
+  "track": "libraries",
+  "order": 86,
+  "estimatedMinutes": 12,
+  "prerequisites": ["085-local-time"],
+  "completionSymbols": ["ql:quickload", "fset:set", "fset:map", "fset:seq", "fset:with", "fset:less", "fset:lookup", "fset:size", "fset:union"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# FSet: Functional Sets, Maps, and Sequences\n\nFSet brings persistent (immutable) collections to Common Lisp: every \"update\" returns a new collection that shares structure with the old. Think Clojure's data structures, but with Lisp-2 ergonomics.\n\nThree workhorses:\n\n* `(fset:set ELEM ...)` — an unordered set with O(log n) membership/insert/delete.\n* `(fset:map (KEY VALUE) ...)` — a key-value map, similarly persistent.\n* `(fset:seq ELEM ...)` — a persistent sequence.\n\nCore operations are uniform across the three:\n\n* `(fset:with COLL ITEM-OR-KEY [VALUE])` — return a copy with the item/binding added.\n* `(fset:less COLL ITEM-OR-KEY)` — return a copy with it removed.\n* `(fset:lookup MAP KEY)` — get the bound value (returns two values: value, present-p).\n* `(fset:size COLL)` — element count.\n* `(fset:union S1 S2)`, `(fset:intersection S1 S2)`, `(fset:set-difference S1 S2)`.\n* `(fset:contains? COLL ITEM)` — membership test.\n\nFSet maps are not `eq`-keyed; they're `compare`-keyed (using FSet's generic compare protocol). Numbers, strings, symbols, conses all work; user-defined classes need a `compare` method."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :fset)",
+      "expected": "(:FSET)",
+      "explain": "Load FSet."
+    },
+    {
+      "kind": "example",
+      "code": "(fset:size (fset:set 1 2 3 2 1))",
+      "expected": "3",
+      "explain": "Duplicates are dropped — it's a set."
+    },
+    {
+      "kind": "example",
+      "code": "(fset:size (fset:with (fset:set 1 2 3) 4))",
+      "expected": "4",
+      "explain": "WITH returns a NEW set with 4 added; the original is unchanged."
+    },
+    {
+      "kind": "example",
+      "code": "(fset:lookup (fset:with (fset:map) :name \"ada\") :name)",
+      "expected": "\"ada\"",
+      "explain": "Build an empty map, add :NAME -> \"ada\", look it up."
+    },
+    {
+      "kind": "example",
+      "code": "(fset:size (fset:union (fset:set 1 2 3) (fset:set 3 4 5)))",
+      "expected": "5",
+      "explain": "Set union: {1,2,3,4,5}."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-DISTINCT (LIST) returning the number of distinct elements in LIST using FSet. Build a set by folding WITH over an empty FSet:SET, then return its SIZE.",
+      "starter": "(defun count-distinct (list)\n  )",
+      "hint": "(fset:size (reduce (lambda (s x) (fset:with s x)) list :initial-value (fset:set))).",
+      "tests": [
+        { "call": "(count-distinct '())", "equals": "0" },
+        { "call": "(count-distinct '(1 1 1))", "equals": "1" },
+        { "call": "(count-distinct '(1 2 3 2 1 4))", "equals": "4" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "088-bordeaux-threads",
+  "title": "Bordeaux-Threads: Portable Concurrency",
+  "track": "libraries",
+  "order": 88,
+  "estimatedMinutes": 10,
+  "prerequisites": ["087-ironclad"],
+  "completionSymbols": ["ql:quickload", "bordeaux-threads:make-thread", "bordeaux-threads:join-thread", "bordeaux-threads:current-thread", "bordeaux-threads:thread-alive-p", "bordeaux-threads:make-lock", "bordeaux-threads:with-lock-held"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Bordeaux-Threads: Portable Concurrency\n\nEvery Common Lisp implementation has its own threading API: `sb-thread:` on SBCL, `mp:` on LispWorks, `ccl:process-*` on Clozure. Bordeaux-Threads (`bt:` is the conventional nickname) is a thin portability layer over them.\n\nThreads:\n\n* `(bt:make-thread FN &key name)` — start a thread running `FN`. Returns a thread object.\n* `(bt:join-thread THREAD)` — wait for it; returns `FN`'s value (on implementations that support that — SBCL does).\n* `(bt:current-thread)` — the thread we're in.\n* `(bt:thread-alive-p T)` — boolean.\n\nLocks:\n\n* `(bt:make-lock &optional name)` — a mutex.\n* `(bt:with-lock-held (LOCK) BODY)` — acquire, run, release. The standard idiom.\n\nCondition variables, semaphores, and atomic primitives are also exposed but follow the same naming pattern. For deterministic tests (and to keep this lesson within the sandbox's promises) we stick to thread-creation + `join-thread` returning a known value. Real applications will reach for higher-level libs like `lparallel` or `chanl`."
+    },
+    {
+      "kind": "example",
+      "code": "(ql:quickload :bordeaux-threads)",
+      "expected": "(:BORDEAUX-THREADS)",
+      "explain": "Load Bordeaux-Threads."
+    },
+    {
+      "kind": "example",
+      "code": "(bordeaux-threads:join-thread (bordeaux-threads:make-thread (lambda () (+ 1 2)) :name \"adder\"))",
+      "expected": "3",
+      "explain": "Spawn a thread that returns 3, join it, get the value back."
+    },
+    {
+      "kind": "example",
+      "code": "(bordeaux-threads:join-thread (bordeaux-threads:make-thread (lambda () (* 6 7))))",
+      "expected": "42",
+      "explain": "Same pattern, different value."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((lock (bordeaux-threads:make-lock))) (bordeaux-threads:with-lock-held (lock) :inside))",
+      "expected": ":INSIDE",
+      "explain": "WITH-LOCK-HELD acquires, runs the body, releases. The body's value is returned."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define RUN-IN-THREAD (THUNK) that runs THUNK in a freshly-spawned thread and returns its value. Use MAKE-THREAD + JOIN-THREAD.",
+      "starter": "(defun run-in-thread (thunk)\n  )",
+      "hint": "(bordeaux-threads:join-thread (bordeaux-threads:make-thread thunk)).",
+      "tests": [
+        { "call": "(run-in-thread (lambda () 99))", "equals": "99" },
+        { "call": "(run-in-thread (lambda () (+ 10 20)))", "equals": "30" },
+        { "call": "(run-in-thread (lambda () (list :ok)))", "equals": "(:OK)" }
+      ]
+    }
+  ]
+}

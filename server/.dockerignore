@@ -1,0 +1,20 @@
+# Build artefacts and local quicklisp checkouts should not bloat the image.
+quicklisp/
+**/*.fasl
+**/*.fas
+**/*.lx32fsl
+**/*.lx64fsl
+
+# Editor cruft
+.vscode/
+.idea/
+*~
+*.swp
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Saved cores and per-session work dirs (created at runtime, not at build)
+landolisp.core
+tmp/

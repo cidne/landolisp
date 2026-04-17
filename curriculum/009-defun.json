@@ -1,0 +1,65 @@
+{
+  "id": "009-defun",
+  "title": "Defining Functions with DEFUN",
+  "track": "functions",
+  "order": 9,
+  "estimatedMinutes": 10,
+  "prerequisites": ["008-equality-predicates"],
+  "completionSymbols": ["defun", "return-from", "documentation", "function", "funcall", "apply"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Defining Functions with DEFUN\n\n`defun` defines a new global function. Its general shape:\n\n```lisp\n(defun NAME (PARAM ...)\n  \"Optional docstring.\"\n  BODY-FORMS...)\n```\n\nThe body is an **implicit progn**: forms execute in order, and the value of the **last form** is returned. To exit early, use `(return-from NAME value)`.\n\nThe symbol `NAME` gets a function binding (separate from its value binding — Lisp is a *Lisp-2*). To pass a function as a value, use `#'NAME` (sugar for `(function NAME)`)."
+    },
+    {
+      "kind": "example",
+      "code": "(defun square (x) (* x x))",
+      "expected": "SQUARE",
+      "explain": "DEFUN returns the symbol it defined."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun square (x) (* x x)) (square 9))",
+      "expected": "81",
+      "explain": "After defining SQUARE, calling it returns 81."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun greet (name) (format nil \"Hi, ~a!\" name)) (greet \"Ada\"))",
+      "expected": "\"Hi, Ada!\"",
+      "explain": "The body's last form is the return value."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun first-positive (xs) (dolist (x xs nil) (when (plusp x) (return-from first-positive x)))) (first-positive '(-1 -2 3 4)))",
+      "expected": "3",
+      "explain": "RETURN-FROM exits the named function early."
+    },
+    {
+      "kind": "example",
+      "code": "(funcall #'+ 1 2 3)",
+      "expected": "6",
+      "explain": "FUNCALL applies a function value to arguments. #'+ is the function named +."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define CUBE that returns x cubed.",
+      "starter": "(defun cube (x)\n  )",
+      "tests": [
+        { "call": "(cube 2)", "equals": "8" },
+        { "call": "(cube 3)", "equals": "27" },
+        { "call": "(cube -4)", "equals": "-64" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SUM-OF-SQUARES that returns a*a + b*b.",
+      "starter": "(defun sum-of-squares (a b)\n  )",
+      "tests": [
+        { "call": "(sum-of-squares 3 4)", "equals": "25" },
+        { "call": "(sum-of-squares 0 0)", "equals": "0" },
+        { "call": "(sum-of-squares 5 12)", "equals": "169" }
+      ]
+    }
+  ]
+}

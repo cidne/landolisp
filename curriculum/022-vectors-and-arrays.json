@@ -1,0 +1,78 @@
+{
+  "id": "022-vectors-and-arrays",
+  "title": "Vectors and Arrays",
+  "track": "data",
+  "order": 22,
+  "estimatedMinutes": 12,
+  "prerequisites": ["021-conses-and-lists"],
+  "completionSymbols": ["vector", "make-array", "aref", "svref", "length", "array-rank", "array-dimensions", "array-dimension", "array-total-size", "fill-pointer", "vector-push", "vector-push-extend", "adjustable-array-p"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Vectors and Arrays\n\nA **vector** is a one-dimensional array — random access is O(1), unlike list traversal.\n\n* `(vector 1 2 3)` — quick literal-style constructor.\n* `#(1 2 3)` — read syntax for a constant vector.\n* `(make-array dims &key element-type initial-element initial-contents adjustable fill-pointer)`.\n\nAccess and mutation:\n\n* `(aref v i)` — read.\n* `(setf (aref v i) x)` — write.\n* `(length v)` — size.\n\nArrays generalise vectors to multiple dimensions:\n\n```lisp\n(make-array '(2 3) :initial-element 0)   ; a 2x3 array\n```\n\n* `(array-rank a)` — number of dimensions.\n* `(array-dimensions a)` — list of sizes.\n* `(aref a i j ...)` — element at coordinates.\n\nVectors with a fill-pointer behave like growable buffers (`vector-push`, `vector-push-extend`)."
+    },
+    {
+      "kind": "example",
+      "code": "(vector 10 20 30)",
+      "expected": "#(10 20 30)",
+      "explain": "Vector literal printed with #(...)"
+    },
+    {
+      "kind": "example",
+      "code": "(aref (vector 10 20 30) 1)",
+      "expected": "20",
+      "explain": "Index 1 — zero-based."
+    },
+    {
+      "kind": "example",
+      "code": "(length (vector 10 20 30))",
+      "expected": "3",
+      "explain": "LENGTH works on any sequence."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((v (make-array 3 :initial-element 0))) (setf (aref v 0) 7) (setf (aref v 2) 9) v)",
+      "expected": "#(7 0 9)",
+      "explain": "MAKE-ARRAY + SETF AREF for mutation."
+    },
+    {
+      "kind": "example",
+      "code": "(let ((m (make-array '(2 3) :initial-element 0))) (setf (aref m 1 2) 42) (aref m 1 2))",
+      "expected": "42",
+      "explain": "2D array indexed with multiple subscripts."
+    },
+    {
+      "kind": "example",
+      "code": "(array-rank (make-array '(2 3 4)))",
+      "expected": "3",
+      "explain": "A 3-dimensional array."
+    },
+    {
+      "kind": "example",
+      "code": "(array-dimensions (make-array '(2 3 4)))",
+      "expected": "(2 3 4)",
+      "explain": "Dimensions returned as a list."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAKE-ZEROS that returns a fresh vector of N zeros.",
+      "starter": "(defun make-zeros (n)\n  )",
+      "hint": "(make-array n :initial-element 0).",
+      "tests": [
+        { "call": "(make-zeros 0)", "equals": "#()" },
+        { "call": "(make-zeros 4)", "equals": "#(0 0 0 0)" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define VEC-SUM that returns the sum of elements in a vector. Use a LOOP or recursion over indices.",
+      "starter": "(defun vec-sum (v)\n  )",
+      "hint": "(loop for i below (length v) sum (aref v i)).",
+      "tests": [
+        { "call": "(vec-sum #(1 2 3 4 5))", "equals": "15" },
+        { "call": "(vec-sum #())", "equals": "0" },
+        { "call": "(vec-sum #(10))", "equals": "10" }
+      ]
+    }
+  ]
+}

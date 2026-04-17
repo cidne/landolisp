@@ -1,0 +1,42 @@
+{
+  "id": "050-method-combination",
+  "title": "BEFORE, AFTER, and AROUND Methods",
+  "track": "clos",
+  "order": 50,
+  "estimatedMinutes": 12,
+  "prerequisites": ["049-method-dispatch"],
+  "completionSymbols": ["defmethod", ":before", ":after", ":around", "call-next-method", "defgeneric", "defclass", "list", "push"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# BEFORE, AFTER, and AROUND Methods\n\nA generic-function call may run *several* methods, in a tightly defined order. The default **standard method combination** runs four kinds of methods:\n\n* `:before` methods — run, in most-specific-first order, before the primary.\n* The most specific **primary** method — runs once. Its return value becomes the call's value.\n* `:after` methods — run, in **least**-specific-first (reverse) order, after the primary.\n* `:around` methods — wrap *everything*. The most specific `:around` runs first; it must call `(call-next-method)` to continue down to the next layer (which is either the next `:around` or the before/primary/after sandwich).\n\nThe `:around` is the only kind that can change the return value (besides primary). `:before`/`:after` run for side effects only — their return values are ignored.\n\n```lisp\n(defmethod transaction :before ((acct account))  (lock acct))\n(defmethod transaction :after  ((acct account))  (unlock acct))\n(defmethod transaction :around ((acct account))\n  (let ((start (get-internal-real-time)))\n    (multiple-value-prog1 (call-next-method)\n      (record-time (- (get-internal-real-time) start)))))\n```\n\nThe combined effect: lock, run primary (with timing wrapper), unlock."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass thing () ()) (defgeneric act (x)) (defmethod act ((x thing)) :primary) (defparameter *log* nil) (defmethod act :before ((x thing)) (push :before *log*)) (defmethod act :after ((x thing)) (push :after *log*)) (act (make-instance 'thing)) (reverse *log*))",
+      "expected": "(:BEFORE :AFTER)",
+      "explain": "The :BEFORE method runs first, then the primary (returns :PRIMARY but we discarded it), then :AFTER. The log shows the order."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass thing () ()) (defgeneric act (x)) (defmethod act ((x thing)) :primary) (defmethod act :around ((x thing)) (list :around-pre (call-next-method) :around-post)) (act (make-instance 'thing)))",
+      "expected": "(:AROUND-PRE :PRIMARY :AROUND-POST)",
+      "explain": ":AROUND wraps the call. CALL-NEXT-METHOD invokes the primary; the around method returns whatever it likes."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass thing () ()) (defgeneric act (x)) (defmethod act ((x thing)) :primary) (defmethod act :around ((x thing)) :short-circuited) (act (make-instance 'thing)))",
+      "expected": ":SHORT-CIRCUITED",
+      "explain": "If :AROUND does NOT call CALL-NEXT-METHOD, the primary (and :BEFORE/:AFTER) NEVER runs."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define class WIDGET, generic function COST returning :BASE for the primary, then add an :AROUND method that returns the list (:WRAPPED <primary-result>). Define DEMO that returns the result of (cost (make-instance 'widget)).",
+      "starter": "(defclass widget () ())\n(defgeneric cost (x))\n(defmethod cost ((x widget)) :base)\n\n(defun demo ()\n  )",
+      "hint": "(defmethod cost :around ((x widget)) (list :wrapped (call-next-method))) and (defun demo () (cost (make-instance 'widget))).",
+      "tests": [
+        { "call": "(demo)", "equals": "(:WRAPPED :BASE)" }
+      ]
+    }
+  ]
+}

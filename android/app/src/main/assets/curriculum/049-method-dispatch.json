@@ -1,0 +1,44 @@
+{
+  "id": "049-method-dispatch",
+  "title": "Method Dispatch and the Class Precedence List",
+  "track": "clos",
+  "order": 49,
+  "estimatedMinutes": 12,
+  "prerequisites": ["048-defgeneric-defmethod"],
+  "completionSymbols": ["defclass", "defgeneric", "defmethod", "class-of", "find-class", "class-name", "make-instance"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Method Dispatch and the Class Precedence List\n\nWhen a generic function is called, CLOS:\n\n1. Looks at the actual classes of the arguments.\n2. Computes the **applicable methods** — those whose specialisers each accept the corresponding argument's class.\n3. Sorts them from **most specific to least specific** using each class's **class precedence list (CPL)**.\n4. By default, calls the most specific one.\n\nThe CPL is a deterministic linearisation of a class and all its ancestors. For single inheritance it's just `(class parents... standard-object t)`. For multiple inheritance, CLOS uses the C3 algorithm (similar to Python). The CPL is stable: every class has exactly one.\n\nYou can inspect it:\n\n```lisp\n(class-precedence-list (find-class 'integer))\n;; => (#<BUILT-IN-CLASS INTEGER> #<...RATIONAL> #<...REAL> #<...NUMBER> #<...T>)\n```\n\nMultiple inheritance teaser:\n\n```lisp\n(defclass a () ())\n(defclass b () ())\n(defclass c (a b) ())   ; CPL: C, A, B, STANDARD-OBJECT, T\n```\n\nA method specialised on `A` and one on `B` are both applicable to a `C` instance; the `A` method wins because `A` precedes `B` in the CPL of `C` (left-to-right order in the superclass list).\n\nThis is why **method order matters** and why you should think about your inheritance graph before reaching for diamond patterns."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass a () ()) (defclass b (a) ()) (defclass c (b) ()) (defgeneric f (x)) (defmethod f ((x a)) :a) (defmethod f ((x b)) :b) (f (make-instance 'c)))",
+      "expected": ":B",
+      "explain": "C inherits from B which inherits from A. Both methods are applicable; B is more specific."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass left () ()) (defclass right () ()) (defclass child (left right) ()) (defgeneric f (x)) (defmethod f ((x left)) :left) (defmethod f ((x right)) :right) (f (make-instance 'child)))",
+      "expected": ":LEFT",
+      "explain": "CHILD's CPL puts LEFT before RIGHT (left-to-right in (defclass child (left right) ())), so :LEFT wins."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass animal () ()) (defclass dog (animal) ()) (class-name (find-class 'dog)))",
+      "expected": "DOG",
+      "explain": "FIND-CLASS looks up the class metaobject; CLASS-NAME goes back the other way. (To inspect the full CPL you'd use SB-MOP:CLASS-PRECEDENCE-LIST, or CLOSER-MOP for portability — outside CL's standard package.)"
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define classes BASE, MID (extends BASE), and LEAF (extends MID). Define generic function WHO with methods on each that return :BASE, :MID, :LEAF respectively. Define DEMO that returns the result for a fresh LEAF.",
+      "starter": "(defclass base () ())\n(defclass mid (base) ())\n(defclass leaf (mid) ())\n\n(defgeneric who (x))\n\n(defun demo ()\n  )",
+      "hint": "(defmethod who ((x base)) :base) etc., then (who (make-instance 'leaf)).",
+      "tests": [
+        { "call": "(demo)", "equals": ":LEAF" },
+        { "call": "(who (make-instance 'mid))", "equals": ":MID" },
+        { "call": "(who (make-instance 'base))", "equals": ":BASE" }
+      ]
+    }
+  ]
+}

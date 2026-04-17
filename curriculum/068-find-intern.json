@@ -1,0 +1,44 @@
+{
+  "id": "068-find-intern",
+  "title": "FIND-SYMBOL, INTERN, UNINTERN, DO-SYMBOLS",
+  "track": "packages",
+  "order": 68,
+  "estimatedMinutes": 10,
+  "prerequisites": ["067-symbol-naming"],
+  "completionSymbols": ["find-symbol", "intern", "unintern", "do-symbols", "do-external-symbols", "make-package", "export", "import"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# FIND-SYMBOL, INTERN, UNINTERN, DO-SYMBOLS\n\nThis is the **runtime** API for poking at packages — the building blocks `defpackage` is built on.\n\n* `(find-symbol NAME &optional PKG)` — return the symbol named `NAME` in `PKG`, or `NIL`. Second value is its accessibility (`:internal`, `:external`, `:inherited`, or `nil`).\n* `(intern NAME &optional PKG)` — like `find-symbol`, but creates the symbol if it isn't there.\n* `(unintern SYM &optional PKG)` — remove `SYM` from `PKG`'s table. Returns `T` if it was there.\n* `(do-symbols (var PKG &optional result) body...)` — iterate over **every** accessible symbol in `PKG` (including inherited).\n* `(do-external-symbols (var PKG &optional result) body...)` — iterate only over the exports.\n\nThese are how tools like `apropos`, package linters, and serializers walk a package. They're also useful in macros that need to construct or look up symbols at compile time.\n\nA mental model: a package is a hash table keyed by string-name plus a parent-pointer chain through its `:use` list. `find-symbol` is a hash lookup; `intern` is a get-or-put; `do-symbols` walks the chain."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (make-package \"PKG-A\" :use '(:cl)) (intern \"WIDGET\" \"PKG-A\") (find-symbol \"WIDGET\" \"PKG-A\"))",
+      "expected": "PKG-A::WIDGET",
+      "explain": "INTERN creates WIDGET. FIND-SYMBOL returns it; the printer shows it as PKG-A::WIDGET because it's not exported."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (make-package \"PKG-B\" :use ()) (intern \"X\" \"PKG-B\") (intern \"Y\" \"PKG-B\") (let ((names '())) (do-symbols (s (find-package \"PKG-B\")) (push (symbol-name s) names)) (sort names #'string<)))",
+      "expected": "(\"X\" \"Y\")",
+      "explain": "DO-SYMBOLS walks the symbols. Because PKG-B uses NO packages, only X and Y are accessible — nothing inherited."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (make-package \"PKG-C\" :use ()) (intern \"GONE\" \"PKG-C\") (unintern (find-symbol \"GONE\" \"PKG-C\") \"PKG-C\") (find-symbol \"GONE\" \"PKG-C\"))",
+      "expected": "NIL",
+      "explain": "UNINTERN removes the symbol; FIND-SYMBOL no longer sees it."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define COUNT-EXTERNAL (PKG-NAME) returning the number of external (exported) symbols in PKG-NAME. Use DO-EXTERNAL-SYMBOLS.",
+      "starter": "(defun count-external (pkg-name)\n  )",
+      "hint": "(let ((n 0)) (do-external-symbols (s (find-package pkg-name)) (declare (ignore s)) (incf n)) n).",
+      "tests": [
+        { "call": "(progn (make-package \"CE-A\" :use ()) (intern \"X\" \"CE-A\") (export (find-symbol \"X\" \"CE-A\") \"CE-A\") (count-external \"CE-A\"))", "equals": "1" },
+        { "call": "(progn (make-package \"CE-B\" :use ()) (count-external \"CE-B\"))", "equals": "0" },
+        { "call": "(progn (make-package \"CE-C\" :use ()) (intern \"A\" \"CE-C\") (intern \"B\" \"CE-C\") (export (list (find-symbol \"A\" \"CE-C\") (find-symbol \"B\" \"CE-C\")) \"CE-C\") (count-external \"CE-C\"))", "equals": "2" }
+      ]
+    }
+  ]
+}

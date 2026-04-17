@@ -1,0 +1,901 @@
+[
+  {
+    "id": "001-atoms",
+    "title": "Atoms and S-expressions",
+    "track": "fundamentals",
+    "order": 1,
+    "estimatedMinutes": 8,
+    "prerequisites": []
+  },
+  {
+    "id": "002-lists-and-evaluation",
+    "title": "Lists and the Evaluator",
+    "track": "fundamentals",
+    "order": 2,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "001-atoms"
+    ]
+  },
+  {
+    "id": "003-quote",
+    "title": "Quote: Code as Data",
+    "track": "fundamentals",
+    "order": 3,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "002-lists-and-evaluation"
+    ]
+  },
+  {
+    "id": "004-symbols",
+    "title": "Symbols and Variables",
+    "track": "fundamentals",
+    "order": 4,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "003-quote"
+    ]
+  },
+  {
+    "id": "005-numbers-basics",
+    "title": "Numbers: The Basics",
+    "track": "fundamentals",
+    "order": 5,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "001-atoms"
+    ]
+  },
+  {
+    "id": "006-printing",
+    "title": "Printing and Output",
+    "track": "fundamentals",
+    "order": 6,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "005-numbers-basics"
+    ]
+  },
+  {
+    "id": "007-comments-and-booleans",
+    "title": "Comments, Booleans, and NIL",
+    "track": "fundamentals",
+    "order": 7,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "004-symbols"
+    ]
+  },
+  {
+    "id": "008-equality-predicates",
+    "title": "Equality: EQ, EQL, EQUAL, EQUALP",
+    "track": "fundamentals",
+    "order": 8,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "007-comments-and-booleans"
+    ]
+  },
+  {
+    "id": "009-defun",
+    "title": "Defining Functions with DEFUN",
+    "track": "functions",
+    "order": 9,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "008-equality-predicates"
+    ]
+  },
+  {
+    "id": "010-parameters",
+    "title": "Parameters: &optional, &rest, &key",
+    "track": "functions",
+    "order": 10,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "009-defun"
+    ]
+  },
+  {
+    "id": "011-let-and-let-star",
+    "title": "Local Bindings: LET and LET*",
+    "track": "functions",
+    "order": 11,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "009-defun"
+    ]
+  },
+  {
+    "id": "012-lambda",
+    "title": "Anonymous Functions: LAMBDA",
+    "track": "functions",
+    "order": 12,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "011-let-and-let-star"
+    ]
+  },
+  {
+    "id": "013-recursion",
+    "title": "Recursion",
+    "track": "functions",
+    "order": 13,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "012-lambda"
+    ]
+  },
+  {
+    "id": "014-higher-order",
+    "title": "Higher-Order Functions: MAPCAR, REDUCE, REMOVE-IF",
+    "track": "functions",
+    "order": 14,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "013-recursion"
+    ]
+  },
+  {
+    "id": "015-closures",
+    "title": "Closures",
+    "track": "functions",
+    "order": 15,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "014-higher-order"
+    ]
+  },
+  {
+    "id": "016-multiple-values",
+    "title": "Multiple Values",
+    "track": "functions",
+    "order": 16,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "015-closures"
+    ]
+  },
+  {
+    "id": "017-labels-and-flet",
+    "title": "Local Functions: FLET and LABELS",
+    "track": "functions",
+    "order": 17,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "016-multiple-values"
+    ]
+  },
+  {
+    "id": "018-numbers-deep",
+    "title": "Numbers in Depth: Ratios, Bignums, Floats, Complex",
+    "track": "data",
+    "order": 18,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "005-numbers-basics"
+    ]
+  },
+  {
+    "id": "019-strings",
+    "title": "Strings",
+    "track": "data",
+    "order": 19,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "018-numbers-deep"
+    ]
+  },
+  {
+    "id": "020-characters",
+    "title": "Characters",
+    "track": "data",
+    "order": 20,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "019-strings"
+    ]
+  },
+  {
+    "id": "021-conses-and-lists",
+    "title": "Conses, Proper Lists, and Dotted Pairs",
+    "track": "data",
+    "order": 21,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "020-characters"
+    ]
+  },
+  {
+    "id": "022-vectors-and-arrays",
+    "title": "Vectors and Arrays",
+    "track": "data",
+    "order": 22,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "021-conses-and-lists"
+    ]
+  },
+  {
+    "id": "023-hash-tables",
+    "title": "Hash Tables",
+    "track": "data",
+    "order": 23,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "022-vectors-and-arrays"
+    ]
+  },
+  {
+    "id": "024-structs",
+    "title": "Structures with DEFSTRUCT",
+    "track": "data",
+    "order": 24,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "023-hash-tables"
+    ]
+  },
+  {
+    "id": "025-sequences-api",
+    "title": "The Sequence API",
+    "track": "data",
+    "order": 25,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "024-structs"
+    ]
+  },
+  {
+    "id": "026-if",
+    "title": "Conditional: IF",
+    "track": "controlflow",
+    "order": 26,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "025-sequences-api"
+    ]
+  },
+  {
+    "id": "027-cond",
+    "title": "Multi-way Branching: COND",
+    "track": "controlflow",
+    "order": 27,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "026-if"
+    ]
+  },
+  {
+    "id": "028-case",
+    "title": "Dispatching on a Key: CASE, ECASE, TYPECASE",
+    "track": "controlflow",
+    "order": 28,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "027-cond"
+    ]
+  },
+  {
+    "id": "029-when-unless",
+    "title": "One-armed Conditionals: WHEN and UNLESS",
+    "track": "controlflow",
+    "order": 29,
+    "estimatedMinutes": 7,
+    "prerequisites": [
+      "028-case"
+    ]
+  },
+  {
+    "id": "030-and-or",
+    "title": "Short-circuit AND and OR",
+    "track": "controlflow",
+    "order": 30,
+    "estimatedMinutes": 9,
+    "prerequisites": [
+      "029-when-unless"
+    ]
+  },
+  {
+    "id": "031-progn-prog1-prog2",
+    "title": "Sequencing: PROGN, PROG1, PROG2",
+    "track": "controlflow",
+    "order": 31,
+    "estimatedMinutes": 6,
+    "prerequisites": [
+      "030-and-or"
+    ]
+  },
+  {
+    "id": "032-do",
+    "title": "DO and DO* Iteration",
+    "track": "controlflow",
+    "order": 32,
+    "estimatedMinutes": 11,
+    "prerequisites": [
+      "031-progn-prog1-prog2"
+    ]
+  },
+  {
+    "id": "033-dolist-dotimes",
+    "title": "DOLIST and DOTIMES",
+    "track": "controlflow",
+    "order": 33,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "032-do"
+    ]
+  },
+  {
+    "id": "034-loop",
+    "title": "The LOOP Macro",
+    "track": "controlflow",
+    "order": 34,
+    "estimatedMinutes": 15,
+    "prerequisites": [
+      "033-dolist-dotimes"
+    ]
+  },
+  {
+    "id": "035-block-return",
+    "title": "BLOCK, RETURN-FROM, and Non-local Exits",
+    "track": "controlflow",
+    "order": 35,
+    "estimatedMinutes": 11,
+    "prerequisites": [
+      "034-loop"
+    ]
+  },
+  {
+    "id": "036-reader-vs-evaluator",
+    "title": "The Reader vs the Evaluator",
+    "track": "macros",
+    "order": 36,
+    "estimatedMinutes": 9,
+    "prerequisites": [
+      "003-quote",
+      "035-block-return"
+    ]
+  },
+  {
+    "id": "037-quasiquote",
+    "title": "Quasiquote, Unquote, Splicing",
+    "track": "macros",
+    "order": 37,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "036-reader-vs-evaluator"
+    ]
+  },
+  {
+    "id": "038-defmacro",
+    "title": "DEFMACRO Basics",
+    "track": "macros",
+    "order": 38,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "037-quasiquote"
+    ]
+  },
+  {
+    "id": "039-macroexpand",
+    "title": "MACROEXPAND and the Hygiene Problem",
+    "track": "macros",
+    "order": 39,
+    "estimatedMinutes": 11,
+    "prerequisites": [
+      "038-defmacro"
+    ]
+  },
+  {
+    "id": "040-gensym",
+    "title": "GENSYM and WITH-GENSYMS",
+    "track": "macros",
+    "order": 40,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "039-macroexpand"
+    ]
+  },
+  {
+    "id": "041-once-only",
+    "title": "The ONCE-ONLY Pattern",
+    "track": "macros",
+    "order": 41,
+    "estimatedMinutes": 11,
+    "prerequisites": [
+      "040-gensym"
+    ]
+  },
+  {
+    "id": "042-compiler-macros",
+    "title": "Compiler Macros: A Light Touch",
+    "track": "macros",
+    "order": 42,
+    "estimatedMinutes": 9,
+    "prerequisites": [
+      "041-once-only"
+    ]
+  },
+  {
+    "id": "043-symbol-macrolet",
+    "title": "Symbol Macros: SYMBOL-MACROLET",
+    "track": "macros",
+    "order": 43,
+    "estimatedMinutes": 9,
+    "prerequisites": [
+      "042-compiler-macros"
+    ]
+  },
+  {
+    "id": "044-setf-places",
+    "title": "SETF and Custom Places",
+    "track": "macros",
+    "order": 44,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "043-symbol-macrolet"
+    ]
+  },
+  {
+    "id": "045-reader-macros",
+    "title": "Reader Macros",
+    "track": "macros",
+    "order": 45,
+    "estimatedMinutes": 13,
+    "prerequisites": [
+      "044-setf-places"
+    ]
+  },
+  {
+    "id": "046-defclass",
+    "title": "DEFCLASS Basics",
+    "track": "clos",
+    "order": 46,
+    "estimatedMinutes": 13,
+    "prerequisites": [
+      "045-reader-macros"
+    ]
+  },
+  {
+    "id": "047-slot-access",
+    "title": "MAKE-INSTANCE, SLOT-VALUE, WITH-SLOTS, WITH-ACCESSORS",
+    "track": "clos",
+    "order": 47,
+    "estimatedMinutes": 11,
+    "prerequisites": [
+      "046-defclass"
+    ]
+  },
+  {
+    "id": "048-defgeneric-defmethod",
+    "title": "DEFGENERIC and DEFMETHOD",
+    "track": "clos",
+    "order": 48,
+    "estimatedMinutes": 13,
+    "prerequisites": [
+      "047-slot-access"
+    ]
+  },
+  {
+    "id": "049-method-dispatch",
+    "title": "Method Dispatch and the Class Precedence List",
+    "track": "clos",
+    "order": 49,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "048-defgeneric-defmethod"
+    ]
+  },
+  {
+    "id": "050-method-combination",
+    "title": "BEFORE, AFTER, and AROUND Methods",
+    "track": "clos",
+    "order": 50,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "049-method-dispatch"
+    ]
+  },
+  {
+    "id": "051-call-next-method",
+    "title": "CALL-NEXT-METHOD and NEXT-METHOD-P",
+    "track": "clos",
+    "order": 51,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "050-method-combination"
+    ]
+  },
+  {
+    "id": "052-multiple-dispatch",
+    "title": "Multiple Dispatch",
+    "track": "clos",
+    "order": 52,
+    "estimatedMinutes": 11,
+    "prerequisites": [
+      "051-call-next-method"
+    ]
+  },
+  {
+    "id": "053-eql-specializers",
+    "title": "EQL Specializers",
+    "track": "clos",
+    "order": 53,
+    "estimatedMinutes": 9,
+    "prerequisites": [
+      "052-multiple-dispatch"
+    ]
+  },
+  {
+    "id": "054-change-class",
+    "title": "CHANGE-CLASS and Instance Updates",
+    "track": "clos",
+    "order": 54,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "053-eql-specializers"
+    ]
+  },
+  {
+    "id": "055-mop-teaser",
+    "title": "Metaobject Protocol Teaser",
+    "track": "clos",
+    "order": 55,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "054-change-class"
+    ]
+  },
+  {
+    "id": "056-condition-system",
+    "title": "The Condition System: Signaling vs Handling",
+    "track": "conditions",
+    "order": 56,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "055-mop-teaser"
+    ]
+  },
+  {
+    "id": "057-error-cerror-signal-warn",
+    "title": "ERROR, CERROR, SIGNAL, WARN",
+    "track": "conditions",
+    "order": 57,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "056-condition-system"
+    ]
+  },
+  {
+    "id": "058-handler-case",
+    "title": "HANDLER-CASE: Java-style Catch",
+    "track": "conditions",
+    "order": 58,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "057-error-cerror-signal-warn"
+    ]
+  },
+  {
+    "id": "059-handler-bind",
+    "title": "HANDLER-BIND: The Real CL Way",
+    "track": "conditions",
+    "order": 59,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "058-handler-case"
+    ]
+  },
+  {
+    "id": "060-restart-case",
+    "title": "RESTART-CASE, INVOKE-RESTART, FIND-RESTART",
+    "track": "conditions",
+    "order": 60,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "059-handler-bind"
+    ]
+  },
+  {
+    "id": "061-define-condition",
+    "title": "DEFINE-CONDITION: Your Own Condition Classes",
+    "track": "conditions",
+    "order": 61,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "060-restart-case"
+    ]
+  },
+  {
+    "id": "062-continuable-error",
+    "title": "The Continuable-Error Pattern: CERROR + Restart",
+    "track": "conditions",
+    "order": 62,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "061-define-condition"
+    ]
+  },
+  {
+    "id": "063-csv-skip-bad-row",
+    "title": "A Worked Example: CSV Parser with SKIP-BAD-ROW",
+    "track": "conditions",
+    "order": 63,
+    "estimatedMinutes": 15,
+    "prerequisites": [
+      "062-continuable-error"
+    ]
+  },
+  {
+    "id": "064-symbols-recap",
+    "title": "What a Symbol Is, Really",
+    "track": "packages",
+    "order": 64,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "063-csv-skip-bad-row"
+    ]
+  },
+  {
+    "id": "065-defpackage",
+    "title": "DEFPACKAGE Basics",
+    "track": "packages",
+    "order": 65,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "064-symbols-recap"
+    ]
+  },
+  {
+    "id": "066-in-package",
+    "title": "IN-PACKAGE: Switching Mid-File",
+    "track": "packages",
+    "order": 66,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "065-defpackage"
+    ]
+  },
+  {
+    "id": "067-symbol-naming",
+    "title": "Qualified Names: PKG:SYM and PKG::SYM",
+    "track": "packages",
+    "order": 67,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "066-in-package"
+    ]
+  },
+  {
+    "id": "068-find-intern",
+    "title": "FIND-SYMBOL, INTERN, UNINTERN, DO-SYMBOLS",
+    "track": "packages",
+    "order": 68,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "067-symbol-naming"
+    ]
+  },
+  {
+    "id": "069-package-gotchas",
+    "title": "Package Gotchas: :CL vs :COMMON-LISP, Locks, Collisions",
+    "track": "packages",
+    "order": 69,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "068-find-intern"
+    ]
+  },
+  {
+    "id": "070-cool-math-package",
+    "title": "Worked Example: A COOL-MATH Package",
+    "track": "packages",
+    "order": 70,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "069-package-gotchas"
+    ]
+  },
+  {
+    "id": "071-asdf-intro",
+    "title": "What ASDF Is and Why It Exists",
+    "track": "system",
+    "order": 71,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "070-cool-math-package"
+    ]
+  },
+  {
+    "id": "072-defsystem",
+    "title": "DEFSYSTEM Basics",
+    "track": "system",
+    "order": 72,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "071-asdf-intro"
+    ]
+  },
+  {
+    "id": "073-components-and-modules",
+    "title": "File Ordering, :FILE, and :MODULE",
+    "track": "system",
+    "order": 73,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "072-defsystem"
+    ]
+  },
+  {
+    "id": "074-search-path",
+    "title": "How ASDF Finds Systems: *CENTRAL-REGISTRY* and Source Registry",
+    "track": "system",
+    "order": 74,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "073-components-and-modules"
+    ]
+  },
+  {
+    "id": "075-load-system-vs-quickload",
+    "title": "LOAD-SYSTEM vs QUICKLOAD",
+    "track": "system",
+    "order": 75,
+    "estimatedMinutes": 8,
+    "prerequisites": [
+      "074-search-path"
+    ]
+  },
+  {
+    "id": "076-test-systems",
+    "title": "Test Systems and IN-ORDER-TO",
+    "track": "system",
+    "order": 76,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "075-load-system-vs-quickload"
+    ]
+  },
+  {
+    "id": "077-asdf-worked-example",
+    "title": "Worked Example: Two-File ASDF System in the Sandbox",
+    "track": "system",
+    "order": 77,
+    "estimatedMinutes": 15,
+    "prerequisites": [
+      "076-test-systems"
+    ]
+  },
+  {
+    "id": "078-alexandria",
+    "title": "Alexandria: The Standard Toolbox",
+    "track": "libraries",
+    "order": 78,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "077-asdf-worked-example"
+    ]
+  },
+  {
+    "id": "079-serapeum",
+    "title": "Serapeum: Alexandria's Bigger Sibling",
+    "track": "libraries",
+    "order": 79,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "078-alexandria"
+    ]
+  },
+  {
+    "id": "080-cl-ppcre",
+    "title": "CL-PPCRE: Perl-Compatible Regex",
+    "track": "libraries",
+    "order": 80,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "079-serapeum"
+    ]
+  },
+  {
+    "id": "081-trivia",
+    "title": "Trivia: Pattern Matching",
+    "track": "libraries",
+    "order": 81,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "080-cl-ppcre"
+    ]
+  },
+  {
+    "id": "082-iterate",
+    "title": "Iterate: A Lispier LOOP",
+    "track": "libraries",
+    "order": 82,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "081-trivia"
+    ]
+  },
+  {
+    "id": "083-str",
+    "title": "STR: A Modern String API",
+    "track": "libraries",
+    "order": 83,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "082-iterate"
+    ]
+  },
+  {
+    "id": "084-cl-json",
+    "title": "CL-JSON: JSON Encode/Decode",
+    "track": "libraries",
+    "order": 84,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "083-str"
+    ]
+  },
+  {
+    "id": "085-local-time",
+    "title": "LOCAL-TIME: Real Date/Time Handling",
+    "track": "libraries",
+    "order": 85,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "084-cl-json"
+    ]
+  },
+  {
+    "id": "086-fset",
+    "title": "FSet: Functional Sets, Maps, and Sequences",
+    "track": "libraries",
+    "order": 86,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "085-local-time"
+    ]
+  },
+  {
+    "id": "087-ironclad",
+    "title": "Ironclad: Cryptographic Primitives",
+    "track": "libraries",
+    "order": 87,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "086-fset"
+    ]
+  },
+  {
+    "id": "088-bordeaux-threads",
+    "title": "Bordeaux-Threads: Portable Concurrency",
+    "track": "libraries",
+    "order": 88,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "087-ironclad"
+    ]
+  },
+  {
+    "id": "089-cl-who",
+    "title": "CL-WHO: HTML Generation",
+    "track": "libraries",
+    "order": 89,
+    "estimatedMinutes": 10,
+    "prerequisites": [
+      "088-bordeaux-threads"
+    ]
+  },
+  {
+    "id": "090-fiveam",
+    "title": "FiveAM: Unit Testing",
+    "track": "libraries",
+    "order": 90,
+    "estimatedMinutes": 12,
+    "prerequisites": [
+      "089-cl-who"
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#1E1B2E</color>
+
+    <!-- Brand seeds used by Theme.kt for Material3 color schemes. -->
+    <color name="brand_primary">#7C5CFF</color>
+    <color name="brand_secondary">#4DB6AC</color>
+    <color name="brand_tertiary">#FFB74D</color>
+</resources>

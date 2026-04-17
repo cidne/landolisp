@@ -1,0 +1,45 @@
+{
+  "id": "041-once-only",
+  "title": "The ONCE-ONLY Pattern",
+  "track": "macros",
+  "order": 41,
+  "estimatedMinutes": 11,
+  "prerequisites": ["040-gensym"],
+  "completionSymbols": ["defmacro", "gensym", "let", "incf", "min", "max", "list"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# The ONCE-ONLY Pattern\n\nLast lesson's `MY-OR2` showed the problem: a macro template that mentions `,a` twice will expand the **expression** `a` twice, evaluating it twice. If `a` has a side effect (or is expensive), that's a bug.\n\nThe `once-only` pattern bottles up the fix:\n\n```lisp\n(defmacro once-only ((&rest names) &body body)\n  (let ((gensyms (loop for n in names collect (gensym (symbol-name n)))))\n    `(let ,(loop for g in gensyms\n                 for n in names\n                 collect `(,g (gensym ,(symbol-name n))))\n       `(let ,(list ,@(loop for g in gensyms\n                            for n in names\n                            collect `(list ,g ,n)))\n          ,(let ,(loop for n in names\n                       for g in gensyms\n                       collect `(,n ,g))\n             ,@body)))))\n```\n\n(That spelling is dense. The standard library `alexandria` ships it as `alexandria:once-only`.)\n\nWhat it does, conceptually: for each argument you pass to `once-only`, the macro guarantees that the **runtime expression** is evaluated **once**, and your template references the **value** instead.\n\nUsage:\n\n```lisp\n(defmacro square-it (x)\n  (once-only (x)\n    `(* ,x ,x)))\n```\n\n`(square-it (incf *n*))` now bumps `*n*` exactly once.\n\nIn this lesson we'll **use** the pattern by writing it manually — bind each repeated argument to a gensym-named local and reference the local in the template."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro square-it (x) (let ((g (gensym))) `(let ((,g ,x)) (* ,g ,g)))) (let ((n 0)) (square-it (incf n)) n))",
+      "expected": "1",
+      "explain": "Manual once-only: (incf n) is bound to the gensym G, then squared. Side effect happens once."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro bad-square (x) `(* ,x ,x)) (let ((n 0)) (bad-square (incf n)) n))",
+      "expected": "2",
+      "explain": "Without the trick: (incf n) appears twice in the expansion, bumping N from 0 to 2."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defmacro safe-min (a b) (let ((ga (gensym)) (gb (gensym))) `(let ((,ga ,a) (,gb ,b)) (if (< ,ga ,gb) ,ga ,gb)))) (safe-min (+ 2 3) (* 2 4)))",
+      "expected": "5",
+      "explain": "Both args are bound to fresh locals once. The IF then references the locals safely."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Write a macro CLAMP3 that returns a value clamped between LO and HI: lo if x<lo, hi if x>hi, else x. Each of x, lo, hi must be evaluated exactly once even though the expansion needs to compare them multiple times. Use GENSYM/let-binding (the manual once-only pattern).",
+      "starter": "(defmacro clamp3 (x lo hi)\n  )",
+      "hint": "(let ((gx (gensym)) (gl (gensym)) (gh (gensym))) `(let ((,gx ,x) (,gl ,lo) (,gh ,hi)) (cond ((< ,gx ,gl) ,gl) ((> ,gx ,gh) ,gh) (t ,gx)))).",
+      "tests": [
+        { "call": "(clamp3 5 0 10)", "equals": "5" },
+        { "call": "(clamp3 -3 0 10)", "equals": "0" },
+        { "call": "(clamp3 99 0 10)", "equals": "10" },
+        { "call": "(let ((n 0)) (clamp3 (incf n) 0 100) n)", "equals": "1" }
+      ]
+    }
+  ]
+}

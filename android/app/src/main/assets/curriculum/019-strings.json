@@ -1,0 +1,83 @@
+{
+  "id": "019-strings",
+  "title": "Strings",
+  "track": "data",
+  "order": 19,
+  "estimatedMinutes": 10,
+  "prerequisites": ["018-numbers-deep"],
+  "completionSymbols": ["string", "length", "char", "subseq", "concatenate", "string-upcase", "string-downcase", "string-capitalize", "string=", "string-equal", "search", "format"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Strings\n\nA string is a specialised vector of characters. Strings are written between double quotes, with `\\\\` and `\\\"` as the two required escapes.\n\nCore operations:\n\n* `(length s)` — number of characters.\n* `(char s i)` — character at index i (0-based).\n* `(subseq s start &optional end)` — substring.\n* `(concatenate 'string a b ...)` — concatenation.\n* `(string-upcase s)`, `(string-downcase s)`, `(string-capitalize s)`.\n* `(string= a b)` — case-sensitive equality. `(string-equal a b)` — case-insensitive.\n* `(search needle haystack)` — index of first match, or `NIL`.\n* `(format nil ...)` — versatile builder.\n\nStrings are sequences, so the generic sequence API (`elt`, `reverse`, `map`, `reduce`, ...) works on them too."
+    },
+    {
+      "kind": "example",
+      "code": "(length \"hello\")",
+      "expected": "5",
+      "explain": "Five characters."
+    },
+    {
+      "kind": "example",
+      "code": "(char \"hello\" 1)",
+      "expected": "#\\e",
+      "explain": "Character literals print with #\\ prefix."
+    },
+    {
+      "kind": "example",
+      "code": "(subseq \"hello world\" 6)",
+      "expected": "\"world\"",
+      "explain": "From index 6 to the end."
+    },
+    {
+      "kind": "example",
+      "code": "(subseq \"hello world\" 0 5)",
+      "expected": "\"hello\"",
+      "explain": "From 0 up to but not including 5."
+    },
+    {
+      "kind": "example",
+      "code": "(concatenate 'string \"foo\" \"-\" \"bar\")",
+      "expected": "\"foo-bar\"",
+      "explain": "CONCATENATE needs the result type."
+    },
+    {
+      "kind": "example",
+      "code": "(string-upcase \"Hello\")",
+      "expected": "\"HELLO\"",
+      "explain": "Uppercase conversion."
+    },
+    {
+      "kind": "example",
+      "code": "(search \"world\" \"hello world\")",
+      "expected": "6",
+      "explain": "Starting index of the first match."
+    },
+    {
+      "kind": "example",
+      "code": "(search \"xyz\" \"hello world\")",
+      "expected": "NIL",
+      "explain": "No match -> NIL."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SHOUT that returns its string argument uppercased with \"!\" appended.",
+      "starter": "(defun shout (s)\n  )",
+      "tests": [
+        { "call": "(shout \"hello\")", "equals": "\"HELLO!\"" },
+        { "call": "(shout \"lisp rocks\")", "equals": "\"LISP ROCKS!\"" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define STARTS-WITH-P that returns T iff string S starts with string PREFIX, and NIL otherwise.",
+      "starter": "(defun starts-with-p (s prefix)\n  )",
+      "hint": "Compare LENGTHs first; if long enough, SEARCH for prefix returning 0.",
+      "tests": [
+        { "call": "(starts-with-p \"landolisp\" \"land\")", "equals": "T" },
+        { "call": "(starts-with-p \"landolisp\" \"lisp\")", "equals": "NIL" },
+        { "call": "(starts-with-p \"hi\" \"hello\")", "equals": "NIL" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "id": "015-closures",
+  "title": "Closures",
+  "track": "functions",
+  "order": 15,
+  "estimatedMinutes": 12,
+  "prerequisites": ["014-higher-order"],
+  "completionSymbols": ["lambda", "let", "incf", "decf", "defun", "funcall", "setf"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Closures\n\nA **closure** is a function that **captures** the lexical bindings live at the moment it was created. Each call to a function that *creates* a closure makes a new, independent set of bindings.\n\nThe canonical example is a counter:\n\n```lisp\n(defun make-counter ()\n  (let ((n 0))\n    (lambda ()\n      (incf n))))\n\n(defparameter *c1* (make-counter))\n(funcall *c1*)   ; => 1\n(funcall *c1*)   ; => 2\n(funcall *c1*)   ; => 3\n```\n\n`(incf n)` mutates the captured `n`. A second `make-counter` call yields a closure with its **own** `n`, completely independent.\n\nClosures are how Lisp does information hiding without classes: the captured binding is unreachable except through the closure itself."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defparameter *adder5* (let ((n 5)) (lambda (x) (+ x n)))) (funcall *adder5* 10))",
+      "expected": "15",
+      "explain": "The lambda captures N=5 and adds it to its argument."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun make-counter () (let ((n 0)) (lambda () (incf n)))) (defparameter *c* (make-counter)) (funcall *c*) (funcall *c*) (funcall *c*))",
+      "expected": "3",
+      "explain": "Each call mutates the captured N. Three calls -> 1, 2, 3 — last is returned."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defun make-counter () (let ((n 0)) (lambda () (incf n)))) (defparameter *a* (make-counter)) (defparameter *b* (make-counter)) (funcall *a*) (funcall *a*) (funcall *b*))",
+      "expected": "1",
+      "explain": "Two counters, two independent bindings. *A*'s N is now 2, *B*'s N is 1; we return *B*'s value."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAKE-ADDER that returns a closure adding N to its argument.",
+      "starter": "(defun make-adder (n)\n  )",
+      "tests": [
+        { "call": "(funcall (make-adder 7) 3)", "equals": "10" },
+        { "call": "(funcall (make-adder -1) 100)", "equals": "99" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAKE-COUNTER returning a fresh counter closure starting from 0; each call returns the new (incremented) value.",
+      "starter": "(defun make-counter ()\n  )",
+      "tests": [
+        { "call": "(let ((c (make-counter))) (funcall c) (funcall c) (funcall c))", "equals": "3" },
+        { "call": "(let ((c (make-counter)) (d (make-counter))) (funcall c) (funcall c) (funcall d))", "equals": "1" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define MAKE-ACCUMULATOR returning a closure that, given a number, adds it to its running total and returns the new total. Start at 0.",
+      "starter": "(defun make-accumulator ()\n  )",
+      "hint": "(let ((total 0)) (lambda (x) (incf total x))).",
+      "tests": [
+        { "call": "(let ((a (make-accumulator))) (funcall a 5) (funcall a 10) (funcall a 100))", "equals": "115" }
+      ]
+    }
+  ]
+}

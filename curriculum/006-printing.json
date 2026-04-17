@@ -1,0 +1,63 @@
+{
+  "id": "006-printing",
+  "title": "Printing and Output",
+  "track": "fundamentals",
+  "order": 6,
+  "estimatedMinutes": 8,
+  "prerequisites": ["005-numbers-basics"],
+  "completionSymbols": ["print", "princ", "prin1", "format", "terpri", "fresh-line", "write-line", "write-string", "*standard-output*"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Printing and Output\n\nLisp has several printing functions that differ in two ways: whether they include the **read syntax** (quotes around strings, `#\\` before chars, etc.) and whether they add **whitespace**.\n\n* `prin1` — read syntax, no surrounding whitespace.\n* `princ` — pretty / human form, no surrounding whitespace (no string quotes).\n* `print` — newline + `prin1` + space.\n* `terpri` — newline (`(write-char #\\Newline)`).\n* `format` — the swiss army knife. `(format t \"...\" args...)` writes to standard output and returns `nil`.\n\nEach printer also returns the object it printed (or `nil`/string for `format`)."
+    },
+    {
+      "kind": "example",
+      "code": "(prin1 \"hi\")",
+      "expected": "\"hi\"",
+      "explain": "PRIN1 prints with quotes (read syntax) and ALSO returns the string."
+    },
+    {
+      "kind": "example",
+      "code": "(princ \"hi\")",
+      "expected": "hi",
+      "explain": "PRINC drops the quotes — human-friendly output."
+    },
+    {
+      "kind": "example",
+      "code": "(format nil \"x = ~a, y = ~a\" 3 4)",
+      "expected": "\"x = 3, y = 4\"",
+      "explain": "When the first arg is NIL, FORMAT returns the formatted string instead of writing to a stream. ~a is the 'aesthetic' (princ-like) directive."
+    },
+    {
+      "kind": "example",
+      "code": "(format nil \"~s\" \"hi\")",
+      "expected": "\"\\\"hi\\\"\"",
+      "explain": "~s uses prin1-style: the produced string contains the literal characters \"hi\" (with quotes), so Lisp prints those quotes escaped."
+    },
+    {
+      "kind": "example",
+      "code": "(format nil \"~d squared is ~d\" 7 49)",
+      "expected": "\"7 squared is 49\"",
+      "explain": "~d is decimal integer. FORMAT with NIL builds a string."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define GREETING that takes a name string and returns a greeting like \"Hello, Ada!\". Use FORMAT with NIL.",
+      "starter": "(defun greeting (name)\n  )",
+      "tests": [
+        { "call": "(greeting \"Ada\")", "equals": "\"Hello, Ada!\"" },
+        { "call": "(greeting \"Lisp\")", "equals": "\"Hello, Lisp!\"" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define DESCRIBE-PAIR that takes two integers and returns a string like \"3 and 4 sum to 7\".",
+      "starter": "(defun describe-pair (a b)\n  )",
+      "tests": [
+        { "call": "(describe-pair 3 4)", "equals": "\"3 and 4 sum to 7\"" },
+        { "call": "(describe-pair 10 -2)", "equals": "\"10 and -2 sum to 8\"" }
+      ]
+    }
+  ]
+}

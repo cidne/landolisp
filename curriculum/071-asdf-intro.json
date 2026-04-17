@@ -1,0 +1,36 @@
+{
+  "id": "071-asdf-intro",
+  "title": "What ASDF Is and Why It Exists",
+  "track": "system",
+  "order": 71,
+  "estimatedMinutes": 8,
+  "prerequisites": ["070-cool-math-package"],
+  "completionSymbols": ["asdf:defsystem", "asdf:load-system", "asdf:find-system", "asdf:system-source-directory", "ql:quickload", "*features*", "load", "compile-file"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# What ASDF Is and Why It Exists\n\nA Lisp project is more than one file. You need:\n\n* a **load order** — `package.lisp` before `core.lisp` before `app.lisp`,\n* **dependency declarations** — \"this project needs `alexandria` loaded first\",\n* a **find-it-on-disk** mechanism — \"where does the system named `foo` live?\".\n\nASDF (Another System Definition Facility) is the de facto standard answer. It's bundled with every modern Lisp implementation. Quicklisp sits on top of it: `(ql:quickload :foo)` downloads `foo` and its dependencies, then asks ASDF to load them.\n\nA **system** is the unit ASDF works with. It's defined by a `.asd` file containing one or more `(asdf:defsystem ...)` forms. The file's stem usually matches the primary system's name (`foo.asd` defines `foo`).\n\nThe high-level workflow:\n\n1. Write `foo.asd` declaring components and dependencies.\n2. Write your `.lisp` files.\n3. From the REPL: `(asdf:load-system :foo)` — ASDF figures out the order, compiles what's stale, loads everything.\n\nNo Makefile, no separate build tool. Just Lisp."
+    },
+    {
+      "kind": "example",
+      "code": "(stringp (asdf:asdf-version))",
+      "expected": "T",
+      "explain": "ASDF:ASDF-VERSION returns a version string; the exact value depends on the implementation, so we just confirm it's a string."
+    },
+    {
+      "kind": "example",
+      "code": "(not (null (find-package :asdf)))",
+      "expected": "T",
+      "explain": "ASDF is loaded into every modern Common Lisp by default. Confirming the package is here."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define ASDF-LOADED-P () returning T if the ASDF package exists, NIL otherwise. (In every healthy SBCL it's T.)",
+      "starter": "(defun asdf-loaded-p ()\n  )",
+      "hint": "(if (find-package :asdf) t nil).",
+      "tests": [
+        { "call": "(asdf-loaded-p)", "equals": "T" }
+      ]
+    }
+  ]
+}

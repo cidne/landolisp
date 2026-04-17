@@ -1,0 +1,50 @@
+{
+  "id": "047-slot-access",
+  "title": "MAKE-INSTANCE, SLOT-VALUE, WITH-SLOTS, WITH-ACCESSORS",
+  "track": "clos",
+  "order": 47,
+  "estimatedMinutes": 11,
+  "prerequisites": ["046-defclass"],
+  "completionSymbols": ["make-instance", "slot-value", "with-slots", "with-accessors", "setf", "incf", "defclass"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# MAKE-INSTANCE, SLOT-VALUE, WITH-SLOTS, WITH-ACCESSORS\n\nFour tools you'll reach for daily.\n\n* `(make-instance 'class :initarg1 v1 ...)` — create. Returns a fresh instance.\n* `(slot-value obj 'slot-name)` — direct slot access. Setf-able. Bypasses any reader/writer methods.\n* `with-slots` — bind local symbol macros to slots:\n\n```lisp\n(with-slots (x y) p\n  (+ x y))\n```\n\nInside the body, `x` is shorthand for `(slot-value p 'x)`. You can also use `(local . slot-name)` pairs to rename.\n\n* `with-accessors` — same idea but goes through the accessor methods:\n\n```lisp\n(with-accessors ((x point-x) (y point-y)) p\n  (+ x y))\n```\n\nThe pair is `(local-name accessor-name)`. Inside the body, `x` expands to `(point-x p)`.\n\nWhich to use? `with-accessors` is idiomatic when accessors exist (they go through the generic-function dispatch and play nicely with method specialisation). `with-slots` is good for code internal to the class. Both make code that **looks like** ordinary variable use."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass point () ((x :initarg :x :initform 0 :accessor px) (y :initarg :y :initform 0 :accessor py))) (let ((p (make-instance 'point :x 3 :y 4))) (with-slots (x y) p (+ x y))))",
+      "expected": "7",
+      "explain": "WITH-SLOTS binds X and Y as symbol macros for (slot-value p 'x/y); we add them."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass point () ((x :initarg :x :initform 0 :accessor px) (y :initarg :y :initform 0 :accessor py))) (let ((p (make-instance 'point :x 3 :y 4))) (with-accessors ((a px) (b py)) p (* a b))))",
+      "expected": "12",
+      "explain": "WITH-ACCESSORS pairs LOCAL-NAME with ACCESSOR. Here A means (PX P)."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass point () ((x :initarg :x :initform 0 :accessor px) (y :initarg :y :initform 0 :accessor py))) (let ((p (make-instance 'point :x 1 :y 2))) (with-slots (x y) p (incf x 10) (incf y 20)) (list (px p) (py p))))",
+      "expected": "(11 22)",
+      "explain": "WITH-SLOTS expansions are PLACES — INCF works directly. After the body, the slots are updated."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass point () ((x :initarg :x :initform 0))) (let ((p (make-instance 'point :x 5))) (setf (slot-value p 'x) 99) (slot-value p 'x)))",
+      "expected": "99",
+      "explain": "SLOT-VALUE is a SETF-able place even without an accessor."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define a class RECT with slots W and H (initargs :w :h, accessors rect-w/rect-h, initforms 0). Define RECT-AREA using WITH-ACCESSORS to compute W*H.",
+      "starter": "(defclass rect () ())\n\n(defun rect-area (r)\n  )",
+      "hint": "(defclass rect () ((w :initarg :w :initform 0 :accessor rect-w) (h :initarg :h :initform 0 :accessor rect-h))). (with-accessors ((w rect-w) (h rect-h)) r (* w h)).",
+      "tests": [
+        { "call": "(rect-area (make-instance 'rect :w 3 :h 4))", "equals": "12" },
+        { "call": "(rect-area (make-instance 'rect))", "equals": "0" },
+        { "call": "(rect-area (make-instance 'rect :w 5 :h 5))", "equals": "25" }
+      ]
+    }
+  ]
+}

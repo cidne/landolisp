@@ -1,0 +1,91 @@
+{
+  "id": "008-equality-predicates",
+  "title": "Equality: EQ, EQL, EQUAL, EQUALP",
+  "track": "fundamentals",
+  "order": 8,
+  "estimatedMinutes": 12,
+  "prerequisites": ["007-comments-and-booleans"],
+  "completionSymbols": ["eq", "eql", "equal", "equalp", "=", "string=", "string-equal", "char=", "char-equal"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Equality: EQ, EQL, EQUAL, EQUALP\n\nCommon Lisp ships with **four general-purpose equality predicates**, each looser than the last. Picking the right one matters.\n\n* `eq` — object identity. Two pointers to the same object. Fast, but for numbers and characters the result is *implementation-defined*. Don't use `eq` on numbers.\n* `eql` — like `eq`, but also true for numbers of the same type and value, and characters of the same character. The default for many built-ins (e.g. `case`, `member`).\n* `equal` — recursive structural equality for conses, strings, bit-vectors, and pathnames. Same as `eql` for everything else.\n* `equalp` — like `equal` but case-insensitive on strings/characters and compares numbers across types (`(equalp 1 1.0)` is `T`).\n\nThere are also type-specific predicates: `=` (numbers, ignores type), `string=` (case-sensitive), `string-equal` (case-insensitive), `char=`, `char-equal`."
+    },
+    {
+      "kind": "example",
+      "code": "(eql 3 3)",
+      "expected": "T",
+      "explain": "Two integers of the same value are EQL."
+    },
+    {
+      "kind": "example",
+      "code": "(eql 3 3.0)",
+      "expected": "NIL",
+      "explain": "EQL requires same type AND value. Integer 3 and float 3.0 are different types."
+    },
+    {
+      "kind": "example",
+      "code": "(= 3 3.0)",
+      "expected": "T",
+      "explain": "= compares numerical value only, across types."
+    },
+    {
+      "kind": "example",
+      "code": "(equal (list 1 2 3) (list 1 2 3))",
+      "expected": "T",
+      "explain": "Two distinct lists with the same structure are EQUAL."
+    },
+    {
+      "kind": "example",
+      "code": "(eql (list 1 2 3) (list 1 2 3))",
+      "expected": "NIL",
+      "explain": "EQL on conses is identity, and these are two different cons chains."
+    },
+    {
+      "kind": "example",
+      "code": "(equal \"abc\" \"abc\")",
+      "expected": "T",
+      "explain": "EQUAL on strings does character-by-character comparison."
+    },
+    {
+      "kind": "example",
+      "code": "(equal \"abc\" \"ABC\")",
+      "expected": "NIL",
+      "explain": "EQUAL is case-sensitive on strings."
+    },
+    {
+      "kind": "example",
+      "code": "(equalp \"abc\" \"ABC\")",
+      "expected": "T",
+      "explain": "EQUALP folds case for strings and characters."
+    },
+    {
+      "kind": "example",
+      "code": "(equalp 1 1.0)",
+      "expected": "T",
+      "explain": "EQUALP compares numbers across types."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define SAME-SHAPE that returns T iff its two arguments are EQUAL (deep structural equality), and NIL otherwise. Coerce to T/NIL.",
+      "starter": "(defun same-shape (a b)\n  )",
+      "tests": [
+        { "call": "(same-shape '(1 2 3) '(1 2 3))", "equals": "T" },
+        { "call": "(same-shape '(1 (2 3)) '(1 (2 3)))", "equals": "T" },
+        { "call": "(same-shape '(1 2) '(1 2 3))", "equals": "NIL" },
+        { "call": "(same-shape \"abc\" \"abc\")", "equals": "T" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define LOOSE-EQ that returns T iff its two arguments are EQUALP (case-insensitive, type-loose for numbers).",
+      "starter": "(defun loose-eq (a b)\n  )",
+      "tests": [
+        { "call": "(loose-eq 1 1.0)", "equals": "T" },
+        { "call": "(loose-eq \"Foo\" \"FOO\")", "equals": "T" },
+        { "call": "(loose-eq '(1 2) '(1 2))", "equals": "T" },
+        { "call": "(loose-eq 'a 'b)", "equals": "NIL" }
+      ]
+    }
+  ]
+}

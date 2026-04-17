@@ -1,0 +1,36 @@
+{
+  "id": "054-change-class",
+  "title": "CHANGE-CLASS and Instance Updates",
+  "track": "clos",
+  "order": 54,
+  "estimatedMinutes": 10,
+  "prerequisites": ["053-eql-specializers"],
+  "completionSymbols": ["change-class", "update-instance-for-different-class", "defclass", "defmethod", "make-instance", "slot-value", "class-of", "class-name"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# CHANGE-CLASS and Instance Updates\n\nCLOS lets a *live instance* change its class at runtime. `(change-class instance new-class)` mutates `instance` so that its class is now `new-class`. Slots present in both classes keep their values; slots only in the old class are dropped; slots only in the new class become unbound (and then their `:initform` may be applied via the next hook).\n\nYou can customise the transition by specialising `update-instance-for-different-class`:\n\n```lisp\n(defmethod update-instance-for-different-class\n    :before ((old basic-account) (new premium-account) &key)\n  ;; copy or compute fields here\n  )\n```\n\nThis is unusual in mainstream OO and powerful for live-coding situations: you can redefine a class while the system is running and existing instances are *updated in place* the next time they're touched (a related hook, `update-instance-for-redefined-class`, handles that case).\n\nDay to day you won't reach for `change-class` often, but knowing it exists explains why CLOS feels alive."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass basic () ((name :initarg :name :accessor name-of))) (defclass premium (basic) ((perks :accessor perks-of :initform :none))) (let ((u (make-instance 'basic :name \"Ada\"))) (change-class u 'premium) (list (class-name (class-of u)) (name-of u) (perks-of u))))",
+      "expected": "(PREMIUM \"Ada\" :NONE)",
+      "explain": "U was a BASIC; after CHANGE-CLASS it's a PREMIUM. The shared NAME slot is preserved; the new PERKS slot gets its INITFORM."
+    },
+    {
+      "kind": "example",
+      "code": "(progn (defclass basic () ((id :initarg :id :accessor id-of))) (defclass advanced (basic) ((tier :initarg :tier :initform :gold :accessor tier-of))) (defmethod update-instance-for-different-class :before ((o basic) (n advanced) &key) (setf (tier-of n) :upgraded)) (let ((u (make-instance 'basic :id 7))) (change-class u 'advanced) (list (id-of u) (tier-of u))))",
+      "expected": "(7 :UPGRADED)",
+      "explain": "The :BEFORE method on UPDATE-INSTANCE-FOR-DIFFERENT-CLASS lets us populate the new slot during the transition."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define classes DRAFT (slot TITLE, accessor title-of) and PUBLISHED (subclass of DRAFT, slot PUBLISHED-AT, accessor published-at-of, initform :now). Define PROMOTE that takes a DRAFT instance and CHANGE-CLASSes it to PUBLISHED, returning a list of (title published-at).",
+      "starter": "(defclass draft () ((title :initarg :title :accessor title-of)))\n(defclass published (draft) ((published-at :initform :now :accessor published-at-of)))\n\n(defun promote (d)\n  )",
+      "hint": "(progn (change-class d 'published) (list (title-of d) (published-at-of d))).",
+      "tests": [
+        { "call": "(promote (make-instance 'draft :title \"Hi\"))", "equals": "(\"Hi\" :NOW)" }
+      ]
+    }
+  ]
+}

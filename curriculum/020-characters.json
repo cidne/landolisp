@@ -1,0 +1,77 @@
+{
+  "id": "020-characters",
+  "title": "Characters",
+  "track": "data",
+  "order": 20,
+  "estimatedMinutes": 8,
+  "prerequisites": ["019-strings"],
+  "completionSymbols": ["char-code", "code-char", "char=", "char-equal", "char<", "char>", "alpha-char-p", "digit-char-p", "alphanumericp", "upper-case-p", "lower-case-p", "char-upcase", "char-downcase"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Characters\n\nA character literal is written `#\\X`. Special names exist for non-printables: `#\\Newline`, `#\\Space`, `#\\Tab`, `#\\Return`.\n\nKey operations:\n\n* `(char-code c)` — integer code (ASCII / Unicode codepoint).\n* `(code-char n)` — character with that code.\n* Case: `char-upcase`, `char-downcase`, `upper-case-p`, `lower-case-p`.\n* Class: `alpha-char-p`, `digit-char-p` (returns the digit value or `NIL`!), `alphanumericp`.\n* Comparisons: `char=`, `char/=`, `char<`, `char-equal` (case-insensitive), etc.\n\nCharacters are NOT integers — `(eql 65 #\\A)` is `NIL`."
+    },
+    {
+      "kind": "example",
+      "code": "(char-code #\\A)",
+      "expected": "65",
+      "explain": "Standard ASCII codepoint for A."
+    },
+    {
+      "kind": "example",
+      "code": "(code-char 97)",
+      "expected": "#\\a",
+      "explain": "Round-trip the other way."
+    },
+    {
+      "kind": "example",
+      "code": "(char-upcase #\\a)",
+      "expected": "#\\A",
+      "explain": "Case folding."
+    },
+    {
+      "kind": "example",
+      "code": "(digit-char-p #\\7)",
+      "expected": "7",
+      "explain": "Returns the digit's numeric value, or NIL if not a digit."
+    },
+    {
+      "kind": "example",
+      "code": "(digit-char-p #\\a)",
+      "expected": "NIL",
+      "explain": "Not a decimal digit. (Use a radix arg to allow hex digits.)"
+    },
+    {
+      "kind": "example",
+      "code": "(char= #\\a #\\a)",
+      "expected": "T",
+      "explain": "Same character."
+    },
+    {
+      "kind": "example",
+      "code": "(char= #\\a #\\A)",
+      "expected": "NIL",
+      "explain": "CHAR= is case-sensitive. Use CHAR-EQUAL to fold case."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define DIGIT-VALUE that returns the integer 0..9 for a decimal digit character, or NIL otherwise.",
+      "starter": "(defun digit-value (c)\n  )",
+      "tests": [
+        { "call": "(digit-value #\\3)", "equals": "3" },
+        { "call": "(digit-value #\\0)", "equals": "0" },
+        { "call": "(digit-value #\\a)", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define NEXT-CHAR that returns the character whose code is one greater than C's.",
+      "starter": "(defun next-char (c)\n  )",
+      "tests": [
+        { "call": "(next-char #\\a)", "equals": "#\\b" },
+        { "call": "(next-char #\\A)", "equals": "#\\B" },
+        { "call": "(next-char #\\0)", "equals": "#\\1" }
+      ]
+    }
+  ]
+}

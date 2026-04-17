@@ -1,0 +1,74 @@
+{
+  "id": "030-and-or",
+  "title": "Short-circuit AND and OR",
+  "track": "controlflow",
+  "order": 30,
+  "estimatedMinutes": 9,
+  "prerequisites": ["029-when-unless"],
+  "completionSymbols": ["and", "or", "not", "numberp", "stringp", "zerop", "plusp"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Short-circuit AND and OR\n\n`and` and `or` are **macros**, not ordinary functions. They short-circuit and they return *values*, not booleans.\n\n`(and a b c)`:\n\n* evaluates `a`, `b`, `c` left to right,\n* if any returns `NIL`, stops and returns `NIL`,\n* otherwise returns the value of the **last** form.\n\n`(or a b c)`:\n\n* evaluates left to right,\n* returns the first non-`NIL` value it sees,\n* or `NIL` if all are `NIL`.\n\nEdge cases:\n\n* `(and)` returns `T`.\n* `(or)` returns `NIL`.\n\nThis value-returning behaviour is why you often see `(or x default)` as an idiomatic way to supply a fallback."
+    },
+    {
+      "kind": "example",
+      "code": "(and 1 2 3)",
+      "expected": "3",
+      "explain": "All truthy; AND returns the LAST value, not T."
+    },
+    {
+      "kind": "example",
+      "code": "(and 1 nil 3)",
+      "expected": "NIL",
+      "explain": "Short-circuits at the first NIL; 3 is never evaluated."
+    },
+    {
+      "kind": "example",
+      "code": "(or nil nil 'found nil)",
+      "expected": "FOUND",
+      "explain": "Returns the first non-NIL value seen."
+    },
+    {
+      "kind": "example",
+      "code": "(or nil nil nil)",
+      "expected": "NIL",
+      "explain": "All NIL — result is NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(or nil 42)",
+      "expected": "42",
+      "explain": "Classic \"default value\" idiom: (or maybe-x default)."
+    },
+    {
+      "kind": "example",
+      "code": "(and)",
+      "expected": "T",
+      "explain": "AND with no arguments is T; OR with no arguments is NIL."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define IN-RANGE-P that returns T if N is between LO and HI (inclusive), else NIL. Use AND.",
+      "starter": "(defun in-range-p (n lo hi)\n  )",
+      "hint": "(and (>= n lo) (<= n hi)) returns T when both are true because <= returns T.",
+      "tests": [
+        { "call": "(in-range-p 5 1 10)", "equals": "T" },
+        { "call": "(in-range-p 1 1 10)", "equals": "T" },
+        { "call": "(in-range-p 11 1 10)", "equals": "NIL" },
+        { "call": "(in-range-p 0 1 10)", "equals": "NIL" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define FIRST-TRUTHY that returns the first non-NIL argument of three, or NIL if all are NIL. Use OR.",
+      "starter": "(defun first-truthy (a b c)\n  )",
+      "tests": [
+        { "call": "(first-truthy nil nil 3)", "equals": "3" },
+        { "call": "(first-truthy 1 2 3)", "equals": "1" },
+        { "call": "(first-truthy nil nil nil)", "equals": "NIL" },
+        { "call": "(first-truthy nil 'x 'y)", "equals": "X" }
+      ]
+    }
+  ]
+}

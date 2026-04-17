@@ -1,0 +1,92 @@
+{
+  "id": "021-conses-and-lists",
+  "title": "Conses, Proper Lists, and Dotted Pairs",
+  "track": "data",
+  "order": 21,
+  "estimatedMinutes": 12,
+  "prerequisites": ["020-characters"],
+  "completionSymbols": ["cons", "car", "cdr", "list", "list*", "consp", "atom", "listp", "null", "nth", "nthcdr", "last", "butlast", "copy-list", "append"],
+  "sections": [
+    {
+      "kind": "prose",
+      "markdown": "# Conses, Proper Lists, and Dotted Pairs\n\nThe **cons cell** is Lisp's fundamental compound datum: a pair `(car . cdr)`. A **proper list** is a chain of conses whose final `cdr` is `NIL`:\n\n```\n(1 2 3)  ==  (1 . (2 . (3 . NIL)))\n```\n\nA cons whose `cdr` is anything other than `NIL` or another cons is a **dotted pair** and prints with a literal dot: `(1 . 2)`.\n\nUseful constructors / accessors:\n\n* `cons`, `list`, `list*` (last arg is the final `cdr`).\n* `nth` (0-based element), `nthcdr`.\n* `last` (the last cons), `butlast` (everything except the last n).\n* `copy-list` for a shallow copy.\n\nPredicates: `consp` (true for cons cells, false for `NIL`), `atom` (true for non-conses), `listp` (true for cons OR `NIL`), `null` (true for `NIL`)."
+    },
+    {
+      "kind": "example",
+      "code": "(cons 1 2)",
+      "expected": "(1 . 2)",
+      "explain": "A dotted pair. The cdr is the integer 2, not a list."
+    },
+    {
+      "kind": "example",
+      "code": "(cons 1 (cons 2 (cons 3 nil)))",
+      "expected": "(1 2 3)",
+      "explain": "The list (1 2 3) is just three conses ending in NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(list* 1 2 3 '(4 5))",
+      "expected": "(1 2 3 4 5)",
+      "explain": "LIST* uses its last argument as the final cdr."
+    },
+    {
+      "kind": "example",
+      "code": "(list* 1 2 3)",
+      "expected": "(1 2 . 3)",
+      "explain": "Last arg becomes the cdr — produces a dotted list."
+    },
+    {
+      "kind": "example",
+      "code": "(nth 2 '(a b c d))",
+      "expected": "C",
+      "explain": "Index 2 — zero-based."
+    },
+    {
+      "kind": "example",
+      "code": "(last '(1 2 3 4))",
+      "expected": "(4)",
+      "explain": "LAST returns the LAST CONS, not its CAR."
+    },
+    {
+      "kind": "example",
+      "code": "(butlast '(1 2 3 4))",
+      "expected": "(1 2 3)",
+      "explain": "Everything except the final cons."
+    },
+    {
+      "kind": "example",
+      "code": "(consp nil)",
+      "expected": "NIL",
+      "explain": "NIL is NOT a cons cell; CONSP is false for NIL."
+    },
+    {
+      "kind": "example",
+      "code": "(listp nil)",
+      "expected": "T",
+      "explain": "But NIL IS a list (the empty one)."
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define LAST-ELEMENT that returns the last element (not the last cons) of a non-empty proper list.",
+      "starter": "(defun last-element (xs)\n  )",
+      "hint": "(car (last xs)).",
+      "tests": [
+        { "call": "(last-element '(1))", "equals": "1" },
+        { "call": "(last-element '(a b c))", "equals": "C" },
+        { "call": "(last-element '(10 20 30 40))", "equals": "40" }
+      ]
+    },
+    {
+      "kind": "exercise",
+      "prompt": "Define DOTTED-PAIR-P that returns T iff its argument is a cons whose cdr is neither NIL nor another cons.",
+      "starter": "(defun dotted-pair-p (x)\n  )",
+      "hint": "(and (consp x) (not (listp (cdr x)))).",
+      "tests": [
+        { "call": "(dotted-pair-p (cons 1 2))", "equals": "T" },
+        { "call": "(dotted-pair-p '(1 2))", "equals": "NIL" },
+        { "call": "(dotted-pair-p nil)", "equals": "NIL" },
+        { "call": "(dotted-pair-p 42)", "equals": "NIL" }
+      ]
+    }
+  ]
+}
