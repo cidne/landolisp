@@ -26,13 +26,20 @@
 # ---------------------------------------------------------------------------
 # Stage 1: base — SBCL + Quicklisp + system libs (firejail for the runtime).
 # ---------------------------------------------------------------------------
-FROM clfoundation/sbcl:2.4.0 AS base
+# Using debian-slim + apt-get sbcl rather than clfoundation/sbcl because the
+# latter's tagged versions get pruned aggressively from Docker Hub. Debian
+# stable ships sbcl 2.2.x which is sufficient for everything in the curriculum;
+# upgrade to a newer SBCL by sourcing from clfoundation once we depend on a
+# 2.4-only feature.
+FROM debian:bookworm-slim AS base
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
+        sbcl \
         curl ca-certificates git \
         firejail \
         tini \
+        build-essential libssl-dev libffi-dev zlib1g-dev \
  && rm -rf /var/lib/apt/lists/*
 
 ENV LANG=C.UTF-8 \
@@ -56,15 +63,13 @@ RUN curl -fsSL -o /tmp/quicklisp.lisp https://beta.quicklisp.org/quicklisp.lisp 
  && chown -R sandbox:sandbox ${QUICKLISP_HOME}
 
 # --- pre-quickload the allow-listed libraries so first-request is fast -----
+# Split into required (server deps) and optional (curriculum libs); the helper
+# script prints per-library status so CI logs name the exact failing system.
+COPY --chown=sandbox:sandbox scripts/preload.lisp /tmp/preload.lisp
 USER sandbox
-RUN sbcl --non-interactive \
+RUN sbcl --dynamic-space-size 4096 --non-interactive \
          --load ${QUICKLISP_HOME}/setup.lisp \
-         --eval "(ql:quickload '(:alexandria :serapeum :cl-ppcre :cl-json \
-                                 :bordeaux-threads :usocket :local-time \
-                                 :hunchentoot :trivia :fset :str \
-                                 :flexi-streams :drakma :fiveam :ironclad \
-                                 :cffi :iterate :cl-who :parenscript \
-                                 :cl-csv))"
+         --load /tmp/preload.lisp
 
 # Add Quicklisp to the sandbox user's init file so non-interactive sbcl
 # auto-loads it on container start.

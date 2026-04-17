@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
@@ -71,10 +72,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -82,32 +79,34 @@ android {
     }
 }
 
+// Configured outside the android {} block so we don't depend on the
+// (deprecated, removed in Gradle 9) `kotlinOptions` extension on
+// BaseAppModuleExtension. The new compilerOptions DSL works in
+// Gradle 8.x + 9.x.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
+
 // Sync curriculum JSON from /curriculum into assets before each build.
 //
-// Prefers `scripts/sync-curriculum.sh` (owned by Agent B3) when present so that
-// validation / index generation stays in one place. Falls back to a plain copy
-// so a fresh checkout can still `assembleDebug` before the helper script lands.
-val curriculumSourceDir = rootProject.projectDir.parentFile.resolve("curriculum")
-val curriculumTargetDir = layout.projectDirectory.dir("src/main/assets/curriculum").asFile
+// Delegates to scripts/sync-curriculum.sh, which is idempotent, prunes
+// stale lessons, and skips schema.json. The Exec task type avoids
+// touching Project.exec / ExecOperations directly so this works on
+// Gradle 8.x and 9.x without changes.
 val syncCurriculumScript = rootProject.projectDir.parentFile.resolve("scripts/sync-curriculum.sh")
 
-val syncCurriculum = tasks.register("syncCurriculum") {
+val syncCurriculum = tasks.register<Exec>("syncCurriculum") {
     group = "build"
     description = "Copies curriculum JSON files into the app's assets/curriculum directory."
-    doLast {
-        when {
-            syncCurriculumScript.exists() -> exec {
-                workingDir = rootProject.projectDir.parentFile
-                commandLine("bash", syncCurriculumScript.absolutePath)
-            }
-            curriculumSourceDir.exists() -> {
-                curriculumTargetDir.mkdirs()
-                curriculumSourceDir.listFiles { f ->
-                    f.isFile && f.name.endsWith(".json") && f.name != "schema.json"
-                }?.forEach { src -> src.copyTo(curriculumTargetDir.resolve(src.name), overwrite = true) }
-            }
-            else -> logger.info("syncCurriculum: no curriculum source dir at $curriculumSourceDir; skipping")
-        }
+    workingDir = rootProject.projectDir.parentFile
+    commandLine("bash", syncCurriculumScript.absolutePath)
+    onlyIf {
+        // No-op on a fresh checkout that hasn't yet pulled scripts/. The
+        // assets dir is empty in that case but assembleDebug still succeeds;
+        // run scripts/sync-curriculum.sh by hand to populate it.
+        syncCurriculumScript.exists()
     }
 }
 
@@ -127,6 +126,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.material)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
 
