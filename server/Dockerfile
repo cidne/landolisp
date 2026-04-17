@@ -67,7 +67,7 @@ RUN curl -fsSL -o /tmp/quicklisp.lisp https://beta.quicklisp.org/quicklisp.lisp 
 # script prints per-library status so CI logs name the exact failing system.
 COPY --chown=sandbox:sandbox scripts/preload.lisp /tmp/preload.lisp
 USER sandbox
-RUN sbcl --non-interactive --dynamic-space-size 4096 \
+RUN sbcl --dynamic-space-size 4096 --non-interactive \
          --load ${QUICKLISP_HOME}/setup.lisp \
          --load /tmp/preload.lisp
 
