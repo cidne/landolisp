@@ -156,6 +156,13 @@ most env work happens in launch-program itself)."
   (declare (ignore extra-env))
   (let ((sbcl-argv (append
                     (list *runner-sbcl-binary*
+                          ;; --noinform: suppress SBCL's startup banner so it
+                          ;; doesn't end up on the child's stdout. The parent
+                          ;; reads length-prefixed frames from stdout starting
+                          ;; with the first byte, so any chatter here corrupts
+                          ;; the framing protocol and the child reports back
+                          ;; as "session_crashed: bad length line".
+                          "--noinform"
                           "--non-interactive"
                           "--no-sysinit"
                           "--no-userinit"

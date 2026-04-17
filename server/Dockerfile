@@ -63,15 +63,13 @@ RUN curl -fsSL -o /tmp/quicklisp.lisp https://beta.quicklisp.org/quicklisp.lisp 
  && chown -R sandbox:sandbox ${QUICKLISP_HOME}
 
 # --- pre-quickload the allow-listed libraries so first-request is fast -----
+# Split into required (server deps) and optional (curriculum libs); the helper
+# script prints per-library status so CI logs name the exact failing system.
+COPY --chown=sandbox:sandbox scripts/preload.lisp /tmp/preload.lisp
 USER sandbox
-RUN sbcl --non-interactive \
+RUN sbcl --non-interactive --dynamic-space-size 4096 \
          --load ${QUICKLISP_HOME}/setup.lisp \
-         --eval "(ql:quickload '(:alexandria :serapeum :cl-ppcre :cl-json \
-                                 :bordeaux-threads :usocket :local-time \
-                                 :hunchentoot :trivia :fset :str \
-                                 :flexi-streams :drakma :fiveam :ironclad \
-                                 :cffi :iterate :cl-who :parenscript \
-                                 :cl-csv))"
+         --load /tmp/preload.lisp
 
 # Add Quicklisp to the sandbox user's init file so non-interactive sbcl
 # auto-loads it on container start.
